@@ -1,0 +1,32 @@
+name: AAX Native development build
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  aax:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Configure AAX Native x64
+        run: cmake -S . -B build-aax -A x64 -DAESTER_BUILD_AAX=ON
+      - name: Build and test
+        run: |
+          cmake --build build-aax --config Release --parallel 2
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ctest --test-dir build-aax -C Release --output-on-failure
+      - name: Stage development package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force aax-development
+          Copy-Item -Recurse "build-aax/DistillazioneEQ_artefacts/Release/AAX/Aester EQ.aaxplugin" aax-development/
+          Copy-Item docs/AAX.md aax-development/README.md
+          Copy-Item LICENSE aax-development/
+          Copy-Item THIRD_PARTY_NOTICES.md aax-development/
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Aester-EQ-AAX-Native-Windows-x64-UNSIGNED-DEVELOPMENT
+          path: aax-development/
+          if-no-files-found: error

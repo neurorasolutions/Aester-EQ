@@ -1,0 +1,14 @@
+name: Numerical tests
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  math:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - run: cmake -S . -B build-math -DBUILD_PLUGIN=OFF -DCMAKE_BUILD_TYPE=Release
+      - run: cmake --build build-math -j2
+      - run: ctest --test-dir build-math --output-on-failure

@@ -1,0 +1,41 @@
+# Aester EQ by Neurora
+
+A 24-band equalizer for focused tonal shaping, dynamic control and frequency-selective spectral processing.
+
+![Aester EQ](assets/aester-dynamic.png)
+
+A wide response workspace sits above six compact band cards. Each card offers numeric frequency, gain and Q editing, while the right-hand rail keeps output, balance, Mix and phase controls available. Four pages provide access to all 24 band slots.
+
+## Processing
+
+- Ten filter shapes and up to 24 independent bands.
+- Static, Dynamic and Spectral operation per band.
+- Stereo, Left, Right, Mid and Side placement.
+- Internal or external sidechain detection; independent detector cuts in Dynamic mode.
+- Live IIR, Analog FIR and five Linear FIR resolutions.
+- **Mix:** a smoothed, latency-aligned blend between dry and processed audio.
+- **Freeze:** hold the spectrum display while processing and output meters continue.
+- Pre/post/sidechain spectrum, output balance, polarity, presets, Undo/Redo and editor-local A/B.
+
+The graph displays the **wet response before Mix**. Blending dry and wet can change the resulting frequency response because filter phase is part of the sum.
+
+## Downloads
+
+| Platform | Package | Status |
+|---|---|---|
+| macOS Apple Silicon | [Aester EQ 1.1.0 DMG](releases/Aester-EQ-Neurora-1.1.0-macOS-arm64.dmg) | Development preview: AU + standalone |
+| Windows x64 | [Aester EQ 1.1.0 installer](releases/Aester-EQ-Neurora-1.1.0-Windows-x64.exe) | Development preview: VST3 + standalone |
+
+Save your session and close your DAW before installing. Builds are unsigned for distribution; the Mac binaries are ad hoc signed and not notarized. Windows installation and DAW compatibility still need interactive verification. [Installation notes](docs/INSTALLATION.md).
+
+## Technical character
+
+Aester's static path uses linear filters: gain and bandwidth determine the tonal change rather than an intentional saturation stage. Dynamic mode changes filter gain from a level detector; Spectral mode uses a short-time Fourier transform to make frequency-selective changes. FIR modes introduce delay and, in linear phase, pre-ringing. This is a technical description, not a claim of perceptual transparency in every setting.
+
+Read the [single-product technical evaluation](docs/TECHNICAL_EVALUATION.md), [test procedure](docs/TESTING.md), [user guide](docs/USER_GUIDE.md) and [build instructions](docs/BUILDING.md).
+
+## Free and open source
+
+Produced by [Neurora](https://www.neurora.it). Contributions and reproducible bug reports are welcome. Source is licensed under AGPL-3.0-only; retain all [third-party notices](THIRD_PARTY_NOTICES.md). Project licensing does not impose an additional non-commercial restriction.
+
+This repository contains Aester EQ source, technical documentation and platform packages.
