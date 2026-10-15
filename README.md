@@ -2,7 +2,7 @@
 
 A 24-band equalizer for focused tonal shaping, dynamic control and frequency-selective spectral processing.
 
-![Aester EQ](assets/aester-dynamic.png)
+![Aester EQ](assets/aester-multiband.png)
 
 A wide response workspace sits above six compact band cards. Each card offers numeric frequency, gain and Q editing, while the right-hand rail keeps output, balance, Mix and phase controls available. Four pages provide access to all 24 band slots.
 
@@ -24,7 +24,7 @@ The graph displays the **wet response before Mix**. Blending dry and wet can cha
 | Platform | Package | Status |
 |---|---|---|
 | macOS Apple Silicon | [Aester EQ 1.1.0 DMG](releases/Aester-EQ-Neurora-1.1.0-macOS-arm64.dmg) | Development preview: AU + standalone |
-| Windows x64 | [Aester EQ 1.1.0 installer](releases/Aester-EQ-Neurora-1.1.0-Windows-x64.exe) | Development preview: VST3 + standalone |
+| Windows x64 | [Build status](https://github.com/neurorasolutions/Aester-EQ/actions/workflows/windows.yml) | VST3 + standalone; installer validation in progress |
 
 Save your session and close your DAW before installing. Builds are unsigned for distribution; the Mac binaries are ad hoc signed and not notarized. Windows installation and DAW compatibility still need interactive verification. [Installation notes](docs/INSTALLATION.md).
 
