@@ -17,7 +17,7 @@ juce::Image curveIcon(int shape,juce::Colour colour) {
 void AesterLookAndFeel::drawToggleButton(juce::Graphics& g,juce::ToggleButton& button,bool over,bool down) {
     if(button.getButtonText().isNotEmpty()){LookAndFeel_V4::drawToggleButton(g,button,over,down);return;}
     float cx=button.getWidth()*.5f,cy=button.getHeight()*.5f;juce::Path arc;arc.addCentredArc(cx,cy,6,6,0,.55f,juce::MathConstants<float>::twoPi-.55f,true);
-    g.setColour(button.getToggleState()?juce::Colour(0xffebc943):juce::Colour(0xff88818d));g.strokePath(arc,juce::PathStrokeType(1.3f));g.drawLine(cx,cy-8,cx,cy-1,1.3f);
+    g.setColour(button.getToggleState()?juce::Colour(0xffdfff00):juce::Colour(0xff88818d));g.strokePath(arc,juce::PathStrokeType(1.3f));g.drawLine(cx,cy-8,cx,cy-1,1.3f);
 }
 void AesterLookAndFeel::drawButtonText(juce::Graphics& g,juce::TextButton& button,bool over,bool down) {
     if(button.getProperties().contains("icon")){auto icon=button.getProperties()["icon"].toString();auto cx=button.getWidth()*.5f,cy=button.getHeight()*.5f;g.setColour(button.isEnabled()?juce::Colour(0xffbab3bf):juce::Colour(0xff625c68));if(icon=="settings"){for(int i=-1;i<=1;++i)g.fillEllipse(cx+float(i*5)-1.5f,cy-1.5f,3,3);}else{bool reverse=icon=="redo";const float direction=reverse?1.0f:-1.0f;juce::Path path;path.startNewSubPath(cx-direction*6,cy+6);path.cubicTo(cx-direction*11,cy-7,cx+direction*4,cy-10,cx+direction*8,cy-3);g.strokePath(path,juce::PathStrokeType(1.8f,juce::PathStrokeType::curved,juce::PathStrokeType::rounded));juce::Path arrow;arrow.startNewSubPath(cx+direction*8,cy-3);arrow.lineTo(cx+direction*1,cy-4);arrow.lineTo(cx+direction*7,cy-10);arrow.closeSubPath();g.fillPath(arrow);}return;}
@@ -27,7 +27,7 @@ void AesterLookAndFeel::drawButtonText(juce::Graphics& g,juce::TextButton& butto
 }
 AesterLookAndFeel::AesterLookAndFeel() {
     setColour(juce::Slider::trackColourId,juce::Colour(0xff425d59));
-    setColour(juce::Slider::thumbColourId,juce::Colour(0xffbce6c9));
+    setColour(juce::Slider::thumbColourId,juce::Colour(0xffdfff00));
     setColour(juce::Slider::backgroundColourId,juce::Colour(0xff23383a));
     setColour(juce::Slider::textBoxBackgroundColourId,juce::Colour(0xff142225));
     setColour(juce::ComboBox::backgroundColourId,juce::Colour(0xff23383a));
@@ -37,12 +37,12 @@ AesterLookAndFeel::AesterLookAndFeel() {
     setColour(juce::TextButton::textColourOffId,juce::Colour(0xffd0cdd3));
     setColour(juce::Slider::textBoxTextColourId,juce::Colour(0xffe8e4e9));
     setColour(juce::ToggleButton::textColourId,juce::Colour(0xffc9c4ce));
-    setColour(juce::ToggleButton::tickColourId,juce::Colour(0xffbce6c9));
+    setColour(juce::ToggleButton::tickColourId,juce::Colour(0xffdfff00));
 }
 void AesterLookAndFeel::drawButtonBackground(juce::Graphics& g,juce::Button& b,const juce::Colour&,bool over,bool down) {
     auto r=b.getLocalBounds().toFloat().reduced(1);
     if(bool(b.getProperties()["toolbar"])){if(over||down){g.setColour(juce::Colour(0xff363039));g.fillRoundedRectangle(r,4);}return;}
-    g.setColour(juce::Colour(down?0xff454149:over?0xff343038:0xff242127));g.fillRoundedRectangle(r,4);
+    g.setColour(juce::Colour(b.getToggleState()?0xffdfff00:down?0xff454149:over?0xff343038:0xff242127));g.fillRoundedRectangle(r,4);
     g.setColour(juce::Colour(0xff49434b));g.drawRoundedRectangle(r,4,0.7f);
 }
 void AesterLookAndFeel::drawRotarySlider(juce::Graphics& g,int x,int y,int w,int h,float pos,float start,float end,juce::Slider& slider) {
@@ -112,7 +112,8 @@ private:
 
 EQEditor::EQEditor(EQProcessor& p):AudioProcessorEditor(p),eqProcessor(p) {
     setLookAndFeel(&style);
-    setSize(1280,840);setResizable(true,true);setResizeLimits(1120,780,1920,1200);
+    const int initialWidth=p.editorWidth.load(),initialHeight=p.editorHeight.load();
+    setResizable(true,true);setResizeLimits(960,680,1920,1200);setSize(initialWidth,initialHeight);
     for(int i=0;i<24;++i)bandPicker.addItem("Band "+juce::String(i+1),i+1);
     shape.addItemList({"Bell","Low Shelf","Low Cut","High Shelf","High Cut","Notch","Band Pass","Tilt Shelf","Flat Tilt","All Pass"},1);
     mode.addItemList({"Static","Dynamic","Spectral"},1);placement.addItemList({"Stereo","Left","Right","Mid","Side"},1);
@@ -123,7 +124,7 @@ EQEditor::EQEditor(EQProcessor& p):AudioProcessorEditor(p),eqProcessor(p) {
     resolutionButton.onClick=[this]{juce::PopupMenu menu;for(int i=0;i<5;++i)menu.addItem(i+1,juce::StringArray{"Low","Medium","High","Very High","Maximum"}[i],true,int(eqProcessor.parameters.getRawParameterValue("linearResolution")->load())==i);auto safe=juce::Component::SafePointer<EQEditor>(this);menu.showMenuAsync(juce::PopupMenu::Options().withParentComponent(this).withTargetComponent(&resolutionButton),[safe](int id){if(safe&&id)safe->eqProcessor.setValue("linearResolution",float(id-1));});};
     addChildComponent(outputPanel);for(auto* child:std::initializer_list<juce::Component*>{&outputKnob,&outputBalance,&outputBalanceMode,&outputInvert,&outputGainLabel,&outputPanLabel})outputPanel.addAndMakeVisible(child);
     for(auto* knob:{&outputKnob,&outputBalance}){knob->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);knob->setTextBoxStyle(juce::Slider::TextBoxBelow,false,100,20);knob->setDoubleClickReturnValue(true,0);}
-    outputKnob.setTextValueSuffix(" dB");outputKnob.setTooltip("Output volume. Double-click to reset to 0 dB.");outputBalance.setTooltip("Balance: left favours Left (or Mid), right favours Right (or Side). Centre preserves both channels.");outputBalanceMode.addItemList({"L/R","M/S"},1);outputBalanceMode.setTooltip("Choose Left/Right or Mid/Side output balance.");outputInvert.setTooltip("Invert the polarity of both output channels.");outputGainLabel.setText("OUTPUT",juce::dontSendNotification);outputPanLabel.setText("BALANCE",juce::dontSendNotification);
+    outputKnob.setTextValueSuffix(" dB");outputKnob.setTooltip("Output volume. Double-click to reset to 0 dB.");outputBalance.setTooltip("Balance: left favours Left (or Mid), right favours Right (or Side). Centre preserves both channels.");outputBalanceMode.addItemList({"L/R","Mid / Side"},1);outputBalanceMode.setTooltip("Choose Left/Right or Mid/Side output balance.");outputInvert.setTooltip("Invert the polarity of both output channels.");outputGainLabel.setText("OUTPUT",juce::dontSendNotification);outputPanLabel.setText("BALANCE",juce::dontSendNotification);
     outputKnobAttachment=std::make_unique<SliderAttachment>(p.parameters,"output",outputKnob);outputBalanceAttachment=std::make_unique<SliderAttachment>(p.parameters,"balance",outputBalance);outputBalanceModeAttachment=std::make_unique<ComboAttachment>(p.parameters,"balanceMode",outputBalanceMode);outputInvertAttachment=std::make_unique<ButtonAttachment>(p.parameters,"invert",outputInvert);
     output.setTooltip("Hover to open output volume and L/R or M/S balance. Click to pin the panel; click again to release.");output.addMouseListener(this,false);
     frequency.setTooltip("Frequency of the selected EQ band. Drag or double-click a node to edit.");gain.setTooltip("Gain of the selected EQ band in dB.");q.setTooltip("Q: higher values produce a narrower frequency band.");active.setTooltip("Enable or disable the selected EQ band.");placement.setTooltip("Process Stereo, Left, Right, Mid or Side for this band.");attack.setTooltip("Dynamic detector attack time in milliseconds.");release.setTooltip("Dynamic detector release time in milliseconds.");
@@ -132,7 +133,7 @@ EQEditor::EQEditor(EQProcessor& p):AudioProcessorEditor(p),eqProcessor(p) {
     for(auto* button:{&nodeActions,&help,&resizeEditor,&slopeButton})addAndMakeVisible(button);
     for(auto* s:std::initializer_list<juce::Slider*>{&frequency,&gain,&q,&output,&threshold,&dynamicRange,&attack,&release}) {
         s->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);s->setTextBoxStyle(juce::Slider::TextBoxBelow,false,110,24);
-        s->setColour(juce::Slider::rotarySliderFillColourId,juce::Colour(0xffbce6c9));
+        s->setColour(juce::Slider::rotarySliderFillColourId,juce::Colour(0xffdfff00));
         s->setColour(juce::Slider::textBoxOutlineColourId,juce::Colours::transparentBlack);
     }
     threshold.setTextValueSuffix(" dB");threshold.setTooltip("Band threshold (dBFS)");slope.setTooltip("Band slope: select dB/oct for Low Cut or High Cut");dynamicRange.setTextValueSuffix(" dB");attack.setTextValueSuffix(" ms");release.setTextValueSuffix(" ms");
@@ -158,7 +159,7 @@ EQEditor::EQEditor(EQProcessor& p):AudioProcessorEditor(p),eqProcessor(p) {
     bandPicker.onChange=[this]{select(bandPicker.getSelectedId()-1);};
     add.onClick=[this]{addBand(1000,0);};
     remove.onClick=[this]{eqProcessor.setValue(EQProcessor::bandID(selected,"on"),0);};
-    reset.onClick=[this]{for(int i=0;i<24;++i){eqProcessor.setValue(EQProcessor::bandID(i,"on"),0);eqProcessor.setValue(EQProcessor::bandID(i,"shape"),0);eqProcessor.setValue(EQProcessor::bandID(i,"gain"),0);eqProcessor.setValue(EQProcessor::bandID(i,"frequency"),1000);eqProcessor.setValue(EQProcessor::bandID(i,"q"),1.0f);eqProcessor.setValue(EQProcessor::bandID(i,"slope"),1);eqProcessor.setValue(EQProcessor::bandID(i,"mode"),0);eqProcessor.setValue(EQProcessor::bandID(i,"external"),0);eqProcessor.setValue(EQProcessor::bandID(i,"free"),0);eqProcessor.setValue(EQProcessor::bandID(i,"triggerLow"),20);eqProcessor.setValue(EQProcessor::bandID(i,"triggerHigh"),20000);eqProcessor.setValue(EQProcessor::bandID(i,"placement"),0);eqProcessor.setValue(EQProcessor::bandID(i,"threshold"),-24);eqProcessor.setValue(EQProcessor::bandID(i,"range"),-6);eqProcessor.setValue(EQProcessor::bandID(i,"attack"),10);eqProcessor.setValue(EQProcessor::bandID(i,"release"),120);}eqProcessor.setValue("mix",1);eqProcessor.setValue("output",0);eqProcessor.setValue("balance",0);eqProcessor.setValue("balanceMode",0);eqProcessor.setValue("invert",0);eqProcessor.setValue("processingPhase",0);eqProcessor.setValue("linearResolution",1);eqProcessor.setValue("bypass",0);select(0);};
+    reset.onClick=[this]{for(int i=0;i<24;++i){eqProcessor.setValue(EQProcessor::bandID(i,"on"),0);eqProcessor.setValue(EQProcessor::bandID(i,"shape"),0);eqProcessor.setValue(EQProcessor::bandID(i,"gain"),0);eqProcessor.setValue(EQProcessor::bandID(i,"frequency"),1000);eqProcessor.setValue(EQProcessor::bandID(i,"q"),1.0f);eqProcessor.setValue(EQProcessor::bandID(i,"slope"),1);eqProcessor.setValue(EQProcessor::bandID(i,"mode"),0);eqProcessor.setValue(EQProcessor::bandID(i,"external"),0);eqProcessor.setValue(EQProcessor::bandID(i,"free"),0);eqProcessor.setValue(EQProcessor::bandID(i,"triggerLow"),20);eqProcessor.setValue(EQProcessor::bandID(i,"triggerHigh"),20000);eqProcessor.setValue(EQProcessor::bandID(i,"placement"),0);eqProcessor.setValue(EQProcessor::bandID(i,"threshold"),-24);eqProcessor.setValue(EQProcessor::bandID(i,"range"),-6);eqProcessor.setValue(EQProcessor::bandID(i,"attack"),10);eqProcessor.setValue(EQProcessor::bandID(i,"release"),120);}eqProcessor.setValue("mix",1);eqProcessor.setValue("output",0);eqProcessor.setValue("balance",0);eqProcessor.setValue("balanceMode",0);eqProcessor.setValue("invert",0);eqProcessor.setValue("midGain",0);eqProcessor.setValue("sideGain",0);eqProcessor.setValue("midInvert",0);eqProcessor.setValue("sideInvert",0);eqProcessor.setValue("processingPhase",0);eqProcessor.setValue("linearResolution",1);eqProcessor.setValue("bypass",0);select(0);};
     save.onClick=[this]{preset(true);};load.onClick=[this]{preset(false);};
     range.onClick=[this]{displayRange=displayRange==12?30:displayRange==30?6:12;range.setButtonText(juce::String(displayRange,0)+" dB");repaint();};
     shape.setVisible(false);mode.setVisible(false);
@@ -178,21 +179,46 @@ EQEditor::EQEditor(EQProcessor& p):AudioProcessorEditor(p),eqProcessor(p) {
     copyAB.onClick=[this]{(editingB?stateA:stateB)=captureState();};
     presetMenu.onClick=[this]{showPresetMenu();};
     help.setTooltip("Help: hover a control for its description. Click for the usage guide.");
-    help.onClick=[this]{juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::InfoIcon,"Aester EQ by Neurora", "Aester EQ is a precision equalizer by Neurora. https://www.neurora.it\n\nDouble-click the graph to add a band. Drag a node to set frequency and gain; scroll to change Q. Right-click a node for band actions. Use the band settings menu for Static, Dynamic or Spectral. Use the bottom band cards to set frequency, gain and Q. Arrow buttons switch between four pages of six bands. Mix blends latency-aligned dry and wet signals; Freeze holds the analyzer display. Threshold, range, attack and release control dynamics. Live mode keeps Static and Dynamic at zero delay. Analog FIR uses an analog-response FIR with 320 samples of delay. Linear FIR offers five FIR resolutions with increasing delay. Spectral adds 1024 samples. The right rail contains output volume, L/R or M/S balance, polarity, Mix and processing phase. Undo/Redo and A/B are local to this editor.", "OK",this);};
-    resizeEditor.setTooltip("Toggle editor size");resizeEditor.onClick=[this]{largeEditor=!largeEditor;setSize(largeEditor?1680:1280,largeEditor?1000:840);};
-    for(int i=0;i<24;++i){bandCards[size_t(i)]=std::make_unique<BandCard>(*this,i);addAndMakeVisible(*bandCards[size_t(i)]);}
+    help.onClick=[this]{juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::InfoIcon,"Aester EQ by Neurora", "Aester EQ is a precision equalizer by Neurora. https://www.neurora.it\n\nDouble-click the graph to add a band. Drag a node to set frequency and gain; scroll to change Q. Right-click a node for band actions. Use the band settings menu for Static, Dynamic or Spectral. Select a node to show its floating frequency, gain and Q controls. SOLO isolates its frequency region; Q sets the audition bandwidth. Click SOLO again to restore the full mix. Solo is not stored in presets and ends when this editor closes. Mix blends latency-aligned dry and wet signals; Freeze holds the analyzer display. Threshold, range, attack and release control dynamics. Live mode keeps Static and Dynamic at zero delay. Analog FIR uses an analog-response FIR with 320 samples of delay. Linear FIR offers five FIR resolutions with increasing delay. Spectral adds 1024 samples. The footer contains Mix, output, balance, polarity and processing phase controls. Undo/Redo and A/B are local to this editor.", "OK",this);};
+    resizeEditor.setButtonText("Size");resizeEditor.setTooltip("Choose a window size, or drag the lower-right corner to resize freely.");resizeEditor.onClick=[this]{juce::PopupMenu menu;menu.addItem(1,"Small · 1000 x 700");menu.addItem(2,"Medium · 1280 x 840");menu.addItem(3,"Large · 1440 x 960");auto safe=juce::Component::SafePointer<EQEditor>(this);menu.showMenuAsync(juce::PopupMenu::Options().withParentComponent(this).withTargetComponent(&resizeEditor),[safe](int result){if(!safe||result==0)return;if(result==1)safe->setSize(1000,700);else if(result==2)safe->setSize(1280,840);else if(result==3)safe->setSize(1440,960);});};
+    addAndMakeVisible(solo);addAndMakeVisible(closePanel);
+    solo.setClickingTogglesState(true);solo.setColour(juce::TextButton::textColourOnId,juce::Colour(0xff15191c));
+    solo.setTooltip("Solo the selected frequency region. Q sets bandwidth. Monitoring only; click again to exit.");
+    solo.onClick=[this]{eqProcessor.setAuditionBand(solo.getToggleState()?selected:-1);resized();repaint();};
+    closePanel.setTooltip("Hide band controls");closePanel.onClick=[this]{panelDismissed=true;eqProcessor.setAuditionBand(-1);resized();repaint();};
+    for(auto* slider:std::initializer_list<juce::Slider*>{&frequency,&gain,&q,&threshold,&dynamicRange,&attack,&release}){
+        slider->onDragStart=[this]{knobDragging=true;};slider->onDragEnd=[this]{knobDragging=false;resized();repaint();};
+    }
     addAndMakeVisible(previousPage);addAndMakeVisible(nextPage);addAndMakeVisible(pageLabel);
     previousPage.setTooltip("Previous six bands");nextPage.setTooltip("Next six bands");previousPage.onClick=[this]{select(std::max(0,bandPage-1)*6);};nextPage.onClick=[this]{select(std::min(3,bandPage+1)*6);};
     for(auto* child:std::initializer_list<juce::Component*>{&outputKnob,&outputBalance,&outputBalanceMode,&outputInvert,&outputGainLabel,&outputPanLabel})addAndMakeVisible(child);
-    outputGainLabel.setText("OUTPUT / dB",juce::dontSendNotification);outputPanLabel.setText("BALANCE",juce::dontSendNotification);
-    for(auto* slider:{&outputKnob,&outputBalance}){slider->setSliderStyle(juce::Slider::LinearHorizontal);slider->setTextBoxStyle(juce::Slider::TextBoxRight,false,60,24);}
+    outputGainLabel.setText("OUTPUT",juce::dontSendNotification);outputPanLabel.setText("BALANCE",juce::dontSendNotification);
+    for(auto* slider:{&outputKnob,&outputBalance,&wetMix}){slider->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);slider->setTextBoxStyle(juce::Slider::TextBoxBelow,false,88,20);slider->setColour(juce::Slider::rotarySliderFillColourId,juce::Colour(0xffdfff00));slider->setColour(juce::Slider::textBoxOutlineColourId,juce::Colours::transparentBlack);}
+    wetMix.setDoubleClickReturnValue(true,1);
+    outputBalance.textFromValueFunction=[this](double value){if(std::abs(value)<.0005)return juce::String("C");const bool ms=eqProcessor.parameters.getRawParameterValue("balanceMode")->load()>.5f;return juce::String(value<0?(ms?"M ":"L "):(ms?"S ":"R "))+juce::String(std::abs(value)*100,0)+"%";};
+    outputBalance.valueFromTextFunction=[](const juce::String& text){const auto t=text.trim().toUpperCase();if(t=="C")return 0.0;const double value=t.retainCharacters("0123456789.-").getDoubleValue()/100;return t.startsWith("L")||t.startsWith("M")?-std::abs(value):t.startsWith("R")||t.startsWith("S")?std::abs(value):value;};
+    outputBalance.updateText();
+    outputBalance.setTooltip("Output balance after Mix. L/R attenuates the opposite channel; M/S favours Mid or Side. Double-click to centre. Unavailable in mono.");
+    wetMix.setTooltip("Latency-aligned dry/wet blend. Balance and polarity work on the blended signal, including at 0% Mix.");
+    addChildComponent(midSidePanel);
+    for(auto* c:std::initializer_list<juce::Component*>{&midOutput,&sideOutput,&midInvert,&sideInvert,&midLabel,&sideLabel,&midSideTitle})midSidePanel.addAndMakeVisible(c);
+    midSideTitle.setText("MID / SIDE OUTPUT",juce::dontSendNotification);midLabel.setText("MID",juce::dontSendNotification);sideLabel.setText("SIDE",juce::dontSendNotification);
+    for(auto* label:{&midLabel,&sideLabel})label->setJustificationType(juce::Justification::centred);
+    for(auto* knob:{&midOutput,&sideOutput}){knob->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);knob->setTextBoxStyle(juce::Slider::TextBoxBelow,false,100,22);knob->setTextValueSuffix(" dB");knob->setDoubleClickReturnValue(true,0);knob->setColour(juce::Slider::rotarySliderFillColourId,juce::Colour(0xffdfff00));}
+    midOutput.setTooltip("Mid output gain: centre / mono information. Active in Mid / Side mode only.");sideOutput.setTooltip("Side output gain: stereo difference information. Active in Mid / Side mode only.");
+    midInvert.setTooltip("Invert only the Mid component before decoding back to L/R.");sideInvert.setTooltip("Invert only the Side component before decoding back to L/R.");
+    midOutputAttachment=std::make_unique<SliderAttachment>(p.parameters,"midGain",midOutput);sideOutputAttachment=std::make_unique<SliderAttachment>(p.parameters,"sideGain",sideOutput);
+    midInvertAttachment=std::make_unique<ButtonAttachment>(p.parameters,"midInvert",midInvert);sideInvertAttachment=std::make_unique<ButtonAttachment>(p.parameters,"sideInvert",sideInvert);
+    outputBalanceMode.onChange=[this]{updateMidSideControls();};
+    outputInvert.setButtonText("INV ALL");outputInvert.setTooltip("Invert both output channels. Use Mid / Side controls for independent polarity.");
+    updateMidSideControls();resized();
     observedState=captureState();stateA=stateB=observedState;history.push_back(observedState);ab.setButtonText("A* / B");
     eqProcessor.spectrum.enabled.store(true);
     select(0);startTimerHz(60);
 }
-EQEditor::~EQEditor(){eqProcessor.sidechainSpectrum.enabled.store(false);eqProcessor.spectrum.enabled.store(false);setLookAndFeel(nullptr);stopTimer();if(dragging)for(auto* field:{"frequency","gain"})eqProcessor.parameters.getParameter(EQProcessor::bandID(selected,field))->endChangeGesture();}
+EQEditor::~EQEditor(){eqProcessor.setAuditionBand(-1);eqProcessor.sidechainSpectrum.enabled.store(false);eqProcessor.spectrum.enabled.store(false);setLookAndFeel(nullptr);stopTimer();if(dragging)for(auto* field:{"frequency","gain"})eqProcessor.parameters.getParameter(EQProcessor::bandID(selected,field))->endChangeGesture();}
 void EQEditor::select(int band) {
-    selected=juce::jlimit(0,23,band);bandPage=selected/6;
+    selected=juce::jlimit(0,23,band);bandPage=selected/6;panelDismissed=false;if(eqProcessor.auditionBand()>=0)eqProcessor.setAuditionBand(selected);
     externalAttachment.reset();modeAttachment.reset();placementAttachment.reset();thresholdAttachment.reset();rangeAttachment.reset();attackAttachment.reset();releaseAttachment.reset();
     frequencyAttachment.reset();gainAttachment.reset();qAttachment.reset();shapeAttachment.reset();slopeAttachment.reset();activeAttachment.reset();
     auto id=[this](const char* name){return EQProcessor::bandID(selected,name);};
@@ -214,7 +240,7 @@ void EQEditor::select(int band) {
     for(auto* knob:std::initializer_list<juce::Slider*>{&frequency,&gain,&q})knob->setColour(juce::Slider::rotarySliderFillColourId,colour(selected));
     bandPicker.setSelectedId(selected+1,juce::dontSendNotification);resized();repaint();
 }
-juce::Colour EQEditor::colour(int band) const {const juce::uint32 palette[]{0xff75ca69,0xff4ec4de,0xffb75fe1,0xffecc94b,0xffed7765,0xff6e94e5,0xffe782b8,0xffa1d681};return juce::Colour(palette[band%8]);}
+juce::Colour EQEditor::colour(int band) const {if(band==selected)return juce::Colour(0xffdfff00);const juce::uint32 palette[]{0xff75ca69,0xff4ec4de,0xffb75fe1,0xffecc94b,0xffed7765,0xff6e94e5,0xffe782b8,0xffa1d681};return juce::Colour(palette[band%8]);}
 float EQEditor::xFor(double hz) const {return plot.getX()+plot.getWidth()*float(std::log(juce::jlimit(10.0,30000.0,hz)/10)/std::log(3000.0));}
 float EQEditor::yFor(double db) const {return plot.getY()+plot.getHeight()*.5f-float(db)*plot.getHeight()/(2*displayRange);}
 double EQEditor::hzFor(float x) const {return 10*std::pow(3000.0,juce::jlimit(0.0f,1.0f,(x-plot.getX())/plot.getWidth()));}
@@ -222,10 +248,9 @@ double EQEditor::dbFor(float y) const {return juce::jlimit(-30.0,30.0,double((pl
 void EQEditor::paint(juce::Graphics& g) {
     g.fillAll(juce::Colour(0xff1a2024));
     g.setColour(juce::Colour(0xff232a2d));g.fillRoundedRectangle(plot.expanded(8,8),6);
-    g.setColour(juce::Colour(0xff1d2428));g.fillRoundedRectangle(panel,6);
-    g.setColour(juce::Colour(0xff20282b));g.fillRect(getWidth()-192,64,192,getHeight()-100);
-    g.setColour(juce::Colour(0xffbce6d9));g.setFont(juce::FontOptions(25,juce::Font::bold));g.drawText("AESTER EQ",24,11,220,38,juce::Justification::left);
-    g.setColour(juce::Colour(0xffa6b7b5));g.setFont(juce::FontOptions(12));g.drawText("NEURORA",getWidth()-177,21,152,24,juce::Justification::centred);
+
+    g.setColour(juce::Colour(0xffe5e9e7));g.setFont(juce::FontOptions(25,juce::Font::bold));g.drawText("AESTER EQ",24,11,185,38,juce::Justification::left);
+    g.setColour(juce::Colour(0xffa6b7b5));g.setFont(juce::FontOptions(12));g.drawText("NEURORA",getWidth()-180,21,105,24,juce::Justification::centred);
     g.setColour(juce::Colour(0xffb4c3c0));g.setFont(juce::FontOptions(10));g.drawText("WET RESPONSE / FREQUENCY",24,61,300,18,juce::Justification::left);
     bool hasBands=false;for(int i=0;i<24;++i)hasBands=hasBands||eqProcessor.settings(i).enabled;
     if(!hasBands){g.setFont(juce::FontOptions(15));g.drawText("Double-click the graph to add a band",int(plot.getCentreX())-200,int(plot.getCentreY())+35,400,30,juce::Justification::centred);}
@@ -256,64 +281,106 @@ void EQEditor::paint(juce::Graphics& g) {
         float y=juce::jlimit(plot.getY(),plot.getBottom(),yFor(db)),sy=juce::jlimit(plot.getY(),plot.getBottom(),yFor(single));
         if(i==0){total.startNewSubPath(x,y);individual.startNewSubPath(x,sy);}else{total.lineTo(x,y);individual.lineTo(x,sy);}
     }
+    const int soloBand=eqProcessor.auditionBand();
+    const bool soloActive=soloBand>=0&&eqProcessor.settings(soloBand).enabled;
     {juce::Graphics::ScopedSaveState saved(g);g.reduceClipRegion(plot.toNearestInt());
-        for(int band=0;band<24;++band)if(eqProcessor.settings(band).enabled){g.setColour(colour(band).withAlpha(.45f));g.strokePath(bandPaths[size_t(band)],juce::PathStrokeType(1.1f));}
-        auto fill=individual;fill.lineTo(plot.getRight(),yFor(0));fill.lineTo(plot.getX(),yFor(0));fill.closeSubPath();
-        g.setColour(colour(selected).withAlpha(0.16f));g.fillPath(fill);
-        g.setColour(colour(selected).withAlpha(0.6f));g.strokePath(individual,juce::PathStrokeType(1.2f));
-        g.setColour(juce::Colour(0xffc8edc8));g.strokePath(total,juce::PathStrokeType(2));
+        for(int band=0;band<24;++band)if(eqProcessor.settings(band).enabled){
+            g.setColour(soloActive?juce::Colour(0xff758185).withAlpha(.13f):colour(band).withAlpha(.45f));
+            if(!soloActive||band!=soloBand)g.strokePath(bandPaths[size_t(band)],juce::PathStrokeType(1.1f));
+        }
+        auto highlighted=soloActive?bandPaths[size_t(soloBand)]:individual;
+        auto fill=highlighted;fill.lineTo(plot.getRight(),yFor(0));fill.lineTo(plot.getX(),yFor(0));fill.closeSubPath();
+        if(soloActive){const auto p=eqProcessor.settings(soloBand);const double displayedGain=p.gain+(p.mode==1?eqProcessor.dynamicAmount[size_t(soloBand)].load():0);const float apex=juce::jlimit(plot.getY(),plot.getBottom(),yFor(std::abs(displayedGain)>.05?displayedGain:1));
+            juce::ColourGradient gradient(juce::Colour(0xffdfff00).withAlpha(.52f),xFor(p.frequency),apex,juce::Colour(0xffdfff00).withAlpha(.015f),xFor(p.frequency),yFor(0),false);g.setGradientFill(gradient);g.fillPath(fill);
+            g.setColour(juce::Colour(0xff758185).withAlpha(.28f));g.strokePath(total,juce::PathStrokeType(1.4f));
+            g.setColour(juce::Colour(0xffdfff00));g.strokePath(highlighted,juce::PathStrokeType(2.2f));
+        }else{g.setColour(colour(selected).withAlpha(.16f));g.fillPath(fill);g.setColour(colour(selected).withAlpha(.6f));g.strokePath(individual,juce::PathStrokeType(1.2f));g.setColour(juce::Colour(0xffdfff00));g.strokePath(total,juce::PathStrokeType(2));}
     }
-    for(int i=0;i<24;++i){auto p=eqProcessor.settings(i);if(!p.enabled)continue;auto point=juce::Point<float>{xFor(p.frequency),juce::jlimit(plot.getY()+8,plot.getBottom()-26,yFor(p.gain))};g.setColour(colour(i).withAlpha(0.12f));if(i==selected)g.fillEllipse(point.x-13,point.y-13,26,26);g.setColour(colour(i));g.fillEllipse(point.x-5,point.y-5,10,10);g.setColour(juce::Colour(0xffe9e3ed));g.drawEllipse(point.x-5,point.y-5,10,10,1);}
+    for(int i=0;i<24;++i){auto p=eqProcessor.settings(i);if(!p.enabled)continue;const bool muted=soloActive&&i!=soloBand;auto point=juce::Point<float>{xFor(p.frequency),juce::jlimit(plot.getY()+8,plot.getBottom()-26,yFor(p.gain))};g.setColour(colour(i).withAlpha(.12f));if(i==selected&&!muted)g.fillEllipse(point.x-13,point.y-13,26,26);g.setColour(muted?juce::Colour(0xff758185).withAlpha(.2f):colour(i));g.fillEllipse(point.x-5,point.y-5,10,10);g.setColour(juce::Colour(0xffe9e3ed).withAlpha(muted?.15f:1.0f));g.drawEllipse(point.x-5,point.y-5,10,10,1);}
     const auto selectedBand=eqProcessor.settings(selected);
-    g.setColour(juce::Colour(0xff91aaa6));g.setFont(juce::FontOptions(11));
-    const float meterTop=126,meterHeight=float(getHeight()-500);
-    g.drawText("OUTPUT  L / R",getWidth()-180,80,168,24,juce::Justification::centred);
-    for(int channel=0;channel<2;++channel){const float level=meterDisplayDb[size_t(channel)],mx=float(getWidth()-147+channel*84);g.setColour(juce::Colour(0xff344145));g.fillRoundedRectangle(mx,meterTop,8,meterHeight,4);const float height=meterHeight*juce::jlimit(0.0f,1.0f,(level+72)/72);g.setColour(juce::Colour(level>0?0xffef886f:channel==0?0xff76dbc1:0xff64c9ee));g.fillRect(mx,meterTop+meterHeight-height,8.0f,height);g.setFont(juce::FontOptions(10));g.drawText(channel==0?"L":"R",int(mx)-8,108,24,16,juce::Justification::centred);}
-    g.setColour(juce::Colour(0xff859a99));g.setFont(juce::FontOptions(9));for(int db=0;db>=-60;db-=12){int y=int(meterTop+(-db)*meterHeight/72);g.drawText(juce::String(db),getWidth()-114,y-6,36,14,juce::Justification::centred);}
-    g.setColour(juce::Colour(0xff171d21));g.fillRect(0,getHeight()-36,getWidth(),36);
-    g.setColour(juce::Colour(0xffa5bab5));g.setFont(juce::FontOptions(11));g.drawText(juce::String(count)+" / 24 BANDS  |  "+eqProcessor.instanceName()+"  |  "+juce::String(eqProcessor.getLatencySamples())+" samples",410,getHeight()-29,getWidth()-625,20,juce::Justification::left);
-    if(analyzerFrozen){g.setColour(juce::Colour(0xffe6b47d));g.drawText("SPECTRUM HELD",int(plot.getX())+12,int(plot.getY())+14,160,20,juce::Justification::left);}
+    const float meterTop=98,meterHeight=plot.getHeight()-26;
+    for(int channel=0;channel<2;++channel){const float level=meterDisplayDb[size_t(channel)],mx=float(getWidth()-47+channel*17);g.setColour(juce::Colour(0xff30393c));g.fillRoundedRectangle(mx,meterTop,7,meterHeight,3);const float height=meterHeight*juce::jlimit(0.0f,1.0f,(level+72)/72);g.setColour(juce::Colour(level>0?0xffef886f:channel==0?0xffdfff00:0xff64c9ce));g.fillRect(mx,meterTop+meterHeight-height,7.0f,height);g.setFont(juce::FontOptions(10));g.setColour(juce::Colour(0xffa7b3b1));g.drawText(channel==0?"L":"R",int(mx)-4,76,16,16,juce::Justification::centred);}
+    g.setColour(juce::Colour(0xff171d21));g.fillRect(0,getHeight()-90,getWidth(),90);
+    g.setColour(juce::Colour(0xff859a99));g.setFont(juce::FontOptions(10));g.drawText(juce::String(count)+" / 24 BANDS | "+juce::String(eqProcessor.getLatencySamples())+" samples",24,getHeight()-27,146,20,juce::Justification::left);
+    g.setColour(juce::Colour(0xffa3b0aa));for(int i=0;i<3;++i){const float d=5.0f+float(i*5);g.drawLine(float(getWidth())-d-4,float(getHeight())-4,float(getWidth())-4,float(getHeight())-d-4,1.2f);}
+    if(analyzerFrozen){g.setColour(juce::Colour(0xffdfff00));g.drawText("SPECTRUM HELD",int(plot.getX())+12,int(plot.getY())+14,160,20,juce::Justification::left);}
+    if(eqProcessor.auditionBand()>=0){g.setColour(juce::Colour(0xffdfff00));g.drawText("SOLO · BAND "+juce::String(eqProcessor.auditionBand()+1),int(plot.getX())+12,int(plot.getY())+36,180,22,juce::Justification::left);}
+    if(selectedBand.enabled&&!panelDismissed){
+        g.setColour(juce::Colours::black.withAlpha(.35f));g.fillRoundedRectangle(panel.translated(0,4).expanded(3),12);
+        g.setColour(juce::Colour(0xff202529));g.fillRoundedRectangle(panel,10);g.setColour(juce::Colour(0xff505b5c));g.drawRoundedRectangle(panel,10,1);
+        g.setColour(juce::Colour(0xffdfff00));g.fillRoundedRectangle(panel.getX()+16,panel.getY()+16,4,16,2);
+        g.setColour(juce::Colour(0xffd7dfdd));g.setFont(juce::FontOptions(12));g.drawText("BAND "+juce::String(selected+1),int(panel.getX())+25,int(panel.getY())+8,90,24,juce::Justification::left);
+        const float nx=xFor(selectedBand.frequency),ny=juce::jlimit(plot.getY()+8,plot.getBottom()-26,yFor(selectedBand.gain));
+        juce::Rectangle<float> tip(juce::jlimit(plot.getX(),plot.getRight()-126,nx-63),juce::jlimit(plot.getY(),plot.getBottom()-48,ny-58),126,42);
+        if(!tip.intersects(panel)){g.setColour(juce::Colour(0xff202529));g.fillRoundedRectangle(tip,6);g.setColour(juce::Colour(0xffdce4df));g.drawText(juce::String(selectedBand.frequency,1)+" Hz",tip.toNearestInt().removeFromTop(21),juce::Justification::centred);g.drawText(juce::String(selectedBand.gain,2)+" dB",tip.toNearestInt().withTrimmedTop(21),juce::Justification::centred);}
+    }
 
 }
 
 void EQEditor::resized() {
-    const int w=getWidth(),h=getHeight(),mainRight=w-218,mainWidth=w-242;
-    plot={24,84,float(mainWidth),float(h-352)};panel={16,float(h-256),float(mainWidth+16),218};
-    undo.setBounds(252,17,28,28);redo.setBounds(288,17,28,28);presetMenu.setBounds(354,17,258,30);ab.setBounds(642,17,70,28);copyAB.setBounds(718,17,52,28);help.setBounds(mainRight-130,17,62,28);resizeEditor.setBounds(mainRight-55,17,38,28);
-    shapeButton.setBounds(24,h-250,132,28);slopeButton.setBounds(164,h-250,90,28);modeSettings.setBounds(262,h-250,108,28);placement.setBounds(378,h-250,100,28);modeSettings.getProperties().remove("icon");modeSettings.setButtonText(juce::StringArray{"Static","Dynamic","Spectral"}[eqProcessor.settings(selected).mode]);
-    add.setBounds(486,h-250,92,28);add.setButtonText("+ Add band");remove.setBounds(586,h-250,88,28);remove.setButtonText("Delete");
-    pageLabel.setBounds(mainRight-161,h-250,90,28);pageLabel.setText(juce::String(bandPage*6+1)+"–"+juce::String(bandPage*6+6)+" / 24",juce::dontSendNotification);previousPage.setBounds(mainRight-65,h-250,28,28);nextPage.setBounds(mainRight-30,h-250,28,28);previousPage.setEnabled(bandPage>0);nextPage.setEnabled(bandPage<3);
-    const int cardWidth=(mainWidth-40)/6;
-    for(int i=0;i<24;++i)if(bandCards[size_t(i)]){bandCards[size_t(i)]->setVisible(i/6==bandPage);bandCards[size_t(i)]->setBounds(24+(i%6)*(cardWidth+8),h-212,cardWidth,132);bandCards[size_t(i)]->refresh();}
-    thresholdLabel.setText("THRESHOLD",juce::dontSendNotification);thresholdLabel.setBounds(24,h-74,78,16);threshold.setBounds(24,h-58,150,20);threshold.getProperties().set("threshold",false);
-    rangeLabel.setText("RANGE",juce::dontSendNotification);rangeLabel.setBounds(182,h-74,60,16);dynamicRange.setBounds(182,h-58,130,20);dynamicRange.getProperties().set("rangeRing",false);
-    attackLabel.setText("ATTACK ms",juce::dontSendNotification);attackLabel.setBounds(320,h-74,90,16);attack.setBounds(320,h-58,112,20);releaseLabel.setText("RELEASE ms",juce::dontSendNotification);releaseLabel.setBounds(440,h-74,100,16);release.setBounds(440,h-58,120,20);
-    for(auto* control:std::initializer_list<juce::Slider*>{&threshold,&dynamicRange,&attack,&release}){control->setSliderStyle(juce::Slider::LinearHorizontal);control->setTextBoxStyle(juce::Slider::TextBoxRight,false,56,20);control->setPopupDisplayEnabled(false,false,this);}
-    triggerButton.setBounds(574,h-67,100,24);externalKey.setBounds(682,h-67,122,24);externalKey.setButtonText("External key");
-    const int railX=w-178,base=h-374;
-    outputGainLabel.setBounds(railX,base,154,20);outputKnob.setBounds(railX,base+20,154,36);outputPanLabel.setBounds(railX,base+59,154,20);outputBalance.setBounds(railX,base+79,154,36);outputBalanceMode.setBounds(railX,base+120,97,25);outputInvert.setBounds(railX+101,base+120,58,25);
-    wetMixLabel.setBounds(railX,base+161,154,20);wetMix.setBounds(railX,base+181,154,34);processingButton.setBounds(railX,base+225,154,28);resolutionButton.setBounds(railX,base+260,154,28);resolutionButton.setVisible(int(eqProcessor.parameters.getRawParameterValue("processingPhase")->load())==2);
-    analyzer.setBounds(24,h-29,161,24);freeze.setBounds(193,h-29,75,24);range.setBounds(280,h-29,75,24);
-    for(auto* c:std::initializer_list<juce::Component*>{&bandPicker,&active,&shape,&slope,&mode,&shapeLabel,&slopeLabel,&outputLabel,&save,&load,&reset,&bypass,&nodeActions,&frequency,&gain,&q,&frequencyLabel,&gainLabel,&qLabel,&output,&outputPanel})c->setVisible(false);
-    const bool visible=eqProcessor.settings(selected).enabled;
-    for(auto* c:std::initializer_list<juce::Component*>{&shapeButton,&slopeButton,&remove,&modeSettings,&placement})c->setVisible(visible);
+    const int w=getWidth(),h=getHeight();eqProcessor.editorWidth.store(w);eqProcessor.editorHeight.store(h);plot={24,84,float(w-96),float(h-194)};
+    undo.setBounds(218,18,30,28);redo.setBounds(253,18,30,28);presetMenu.setBounds(300,18,std::max(140,w-800),30);ab.setBounds(w-490,18,65,28);copyAB.setBounds(w-420,18,50,28);help.setBounds(w-340,18,60,28);resizeEditor.setBounds(w-265,18,50,28);
+    const auto p=eqProcessor.settings(selected);const bool visible=p.enabled&&!panelDismissed;
+    const float panelScale=juce::jlimit(.70f,1.0f,std::min(float(w)/1280,float(h)/840));
+    const float pw=620*panelScale,ph=(expanded?304:254)*panelScale;
+    if(!knobDragging||panel.isEmpty()){
+        float px=juce::jlimit(plot.getX()+8,plot.getRight()-pw-8,xFor(p.frequency)-pw*.5f);
+        const float nodeY=yFor(p.gain);
+        if(panelBelow&&nodeY>plot.getBottom()-ph-8)panelBelow=false;
+        else if(!panelBelow&&nodeY<plot.getY()+ph+8)panelBelow=true;
+        float desiredY=panelBelow?nodeY+24:nodeY-ph-24;
+        if(eqProcessor.auditionBand()==selected)desiredY=p.gain>=0?std::max(desiredY,yFor(0)+24):std::min(desiredY,yFor(0)-ph-24);
+        float py=juce::jlimit(plot.getY()+8,plot.getBottom()-ph-8,desiredY);
+        panel={px,py,pw,ph};panelFrequency=float(p.frequency);panelBand=selected;
+    }
+    const int x=int(panel.getX()),y=int(panel.getY());
+    solo.setBounds(x+443,y+10,100,28);closePanel.setBounds(x+574,y+10,30,28);
+    frequencyLabel.setBounds(x+20,y+46,150,20);gainLabel.setBounds(x+180,y+46,150,20);qLabel.setBounds(x+340,y+46,150,20);
+    frequency.setBounds(x+20,y+66,150,125);gain.setBounds(x+180,y+66,150,125);q.setBounds(x+340,y+66,150,125);
+    shapeButton.setBounds(x+16,y+210,140,30);slopeButton.setBounds(x+165,y+210,106,30);placement.setBounds(x+280,y+210,125,30);modeSettings.setBounds(x+414,y+210,126,30);remove.setBounds(x+550,y+210,54,30);remove.setButtonText("Del");
+    modeSettings.getProperties().remove("icon");modeSettings.setButtonText(juce::StringArray{"Static","Dynamic","Spectral"}[p.mode]);
+    threshold.getProperties().set("threshold",true);threshold.setSliderStyle(juce::Slider::LinearVertical);threshold.setTextBoxStyle(juce::Slider::TextBoxBelow,false,100,22);threshold.setBounds(x+503,y+70,100,130);thresholdLabel.setBounds(x+503,y+46,100,20);
+    rangeLabel.setBounds(x+16,y+252,135,18);dynamicRange.getProperties().set("rangeRing",false);dynamicRange.setSliderStyle(juce::Slider::LinearHorizontal);dynamicRange.setTextBoxStyle(juce::Slider::TextBoxRight,false,56,20);dynamicRange.setBounds(x+16,y+275,135,24);
+    attackLabel.setBounds(x+163,y+252,114,18);attack.setSliderStyle(juce::Slider::LinearHorizontal);attack.setTextBoxStyle(juce::Slider::TextBoxRight,false,56,20);attack.setBounds(x+163,y+275,114,24);
+    releaseLabel.setBounds(x+289,y+252,114,18);release.setSliderStyle(juce::Slider::LinearHorizontal);release.setTextBoxStyle(juce::Slider::TextBoxRight,false,56,20);release.setBounds(x+289,y+275,114,24);triggerButton.setBounds(x+417,y+264,85,28);externalKey.setBounds(x+512,y+264,92,28);
+    processingButton.setBounds(24,h-73,118,26);resolutionButton.setBounds(150,h-73,92,26);analyzer.setBounds(250,h-73,140,26);freeze.setBounds(398,h-73,60,26);range.setBounds(466,h-73,60,26);
+    for(auto* label:{&outputPanLabel,&wetMixLabel,&outputGainLabel})label->setJustificationType(juce::Justification::centred);
+    outputPanLabel.setBounds(w-322,h-88,92,18);outputBalance.setBounds(w-322,h-70,92,68);
+    wetMixLabel.setBounds(w-220,h-88,92,18);wetMix.setBounds(w-220,h-70,92,68);
+    outputGainLabel.setBounds(w-118,h-88,92,18);outputKnob.setBounds(w-118,h-70,92,68);
+    outputBalanceMode.setBounds(300,h-26,120,22);outputInvert.setBounds(430,h-26,90,22);
+    midSidePanel.setBounds(w-344,h-298,318,200);midSideTitle.setBounds(15,6,288,25);
+    midLabel.setBounds(18,35,130,20);sideLabel.setBounds(170,35,130,20);midOutput.setBounds(18,56,130,105);sideOutput.setBounds(170,56,130,105);midInvert.setBounds(23,168,130,26);sideInvert.setBounds(175,168,130,26);
+    midSidePanel.toFront(false);
+    add.setBounds(180,h-26,105,22);add.setButtonText("+ Add band");
+    for(auto& card:bandCards)if(card)card->setVisible(false);
+    for(auto* c:std::initializer_list<juce::Component*>{&previousPage,&nextPage,&pageLabel,&bandPicker,&active,&shape,&slope,&mode,&shapeLabel,&slopeLabel,&outputLabel,&save,&load,&reset,&bypass,&nodeActions,&output,&outputPanel})c->setVisible(false);
+    for(auto* c:std::initializer_list<juce::Component*>{&solo,&closePanel,&frequency,&gain,&q,&frequencyLabel,&gainLabel,&qLabel,&shapeButton,&slopeButton,&remove,&modeSettings,&placement})c->setVisible(visible);
     for(auto* c:std::initializer_list<juce::Component*>{&threshold,&dynamicRange,&attack,&release,&thresholdLabel,&rangeLabel,&attackLabel,&releaseLabel,&externalKey,&triggerButton})c->setVisible(visible&&expanded);
+    const auto transform=juce::AffineTransform::translation(float(-x),float(-y)).scaled(panelScale).translated(float(x),float(y));
+    for(auto* c:std::initializer_list<juce::Component*>{&solo,&closePanel,&frequency,&gain,&q,&frequencyLabel,&gainLabel,&qLabel,&shapeButton,&slopeButton,&remove,&modeSettings,&placement,&threshold,&dynamicRange,&attack,&release,&thresholdLabel,&rangeLabel,&attackLabel,&releaseLabel,&externalKey,&triggerButton})c->setTransform(transform);
+    resolutionButton.setVisible(int(eqProcessor.parameters.getRawParameterValue("processingPhase")->load())==2);
+}
+void EQEditor::updateMidSideControls(){
+    const bool stereo=eqProcessor.getMainBusNumOutputChannels()>1,ms=eqProcessor.parameters.getRawParameterValue("balanceMode")->load()>.5f;
+    outputPanLabel.setText(ms?"MID / SIDE":"BALANCE",juce::dontSendNotification);
+    midSidePanel.setVisible(stereo&&ms);if(midSidePanel.isVisible())midSidePanel.toFront(false);
 }
 void EQEditor::updateNodeAction(){nodeActions.setVisible(false);}
-void EQEditor::timerCallback(){const int phaseMode=int(eqProcessor.parameters.getRawParameterValue("processingPhase")->load());processingButton.setButtonText(juce::StringArray{"Live","Analog FIR","Linear FIR"}[phaseMode]);resolutionButton.setVisible(phaseMode==2);resolutionButton.setButtonText(juce::StringArray{"Low","Medium","High","Very High","Maximum"}[int(eqProcessor.parameters.getRawParameterValue("linearResolution")->load())]);const auto mouse=getLocalPoint(nullptr,juce::Desktop::getInstance().getMainMouseSource().getScreenPosition().toInt());const bool outputHover=output.getBounds().expanded(8).contains(mouse)||(outputPanel.isVisible()&&outputPanel.getBounds().expanded(6).contains(mouse));juce::ignoreUnused(outputHover);outputPanel.setVisible(false);outputBalance.setEnabled(eqProcessor.getMainBusNumOutputChannels()>1);outputBalanceMode.setEnabled(eqProcessor.getMainBusNumOutputChannels()>1);const auto currentBand=eqProcessor.settings(selected);if(shapeButton.isVisible()!=currentBand.enabled)resized();for(auto& card:bandCards)if(card)card->refresh();updateNodeAction();auto current=captureState();if(current!=observedState){observedState=std::move(current);stableTicks=0;}else if(++stableTicks>=10&&!dragging&&!frequency.isMouseButtonDown()&&!gain.isMouseButtonDown()&&!q.isMouseButtonDown()&&!threshold.isMouseButtonDown()&&!dynamicRange.isMouseButtonDown()&&!attack.isMouseButtonDown()&&!release.isMouseButtonDown()&&!output.isMouseButtonDown())commitHistory();undo.setEnabled(historyPosition>0||captureState()!=history[size_t(historyPosition)]);redo.setEnabled(historyPosition+1<int(history.size()));threshold.getProperties().set("detectorDb",eqProcessor.detectorLevel[size_t(selected)].load());thresholdLabel.setText("THRESHOLD",juce::dontSendNotification);if(analyzerMode!=0||showSidechain)updateAnalysis();else updateMeters();const auto p=eqProcessor.settings(selected);if(expanded!=(p.mode!=0)){expanded=p.mode!=0;resized();}modeSettings.setButtonText(juce::StringArray{"Static","Dynamic","Spectral"}[p.mode]);triggerButton.setEnabled(p.mode==1);triggerButton.setButtonText(p.mode==1&&p.freeTrigger?"Free":"Band");triggerButton.setTooltip("Trigger: "+juce::String(std::min(p.triggerLow,p.triggerHigh),0)+"–"+juce::String(std::max(p.triggerLow,p.triggerHigh),0)+" Hz (Free available in Dynamic mode)");const bool cut=p.shape==distillazione::Shape::LowCut||p.shape==distillazione::Shape::HighCut;shapeButton.getProperties().set("shape",int(p.shape));shapeButton.setButtonText(shapeNames[int(p.shape)]);for(auto* knob:std::initializer_list<juce::Slider*>{&frequency,&gain,&q})knob->setColour(juce::Slider::rotarySliderFillColourId,colour(selected));slope.setEnabled(cut);slopeButton.setEnabled(cut);slopeButton.setButtonText(juce::StringArray{"6","12","24","36","48","72","96"}[juce::jlimit(0,6,p.slope)]+" dB/oct");gain.setEnabled(p.shape==distillazione::Shape::Bell||p.shape==distillazione::Shape::LowShelf||p.shape==distillazione::Shape::HighShelf||p.shape==distillazione::Shape::TiltShelf||p.shape==distillazione::Shape::FlatTilt);repaint();}
+void EQEditor::timerCallback(){const int phaseMode=int(eqProcessor.parameters.getRawParameterValue("processingPhase")->load());processingButton.setButtonText(juce::StringArray{"Live","Analog FIR","Linear FIR"}[phaseMode]);resolutionButton.setVisible(phaseMode==2);resolutionButton.setButtonText(juce::StringArray{"Low","Medium","High","Very High","Maximum"}[int(eqProcessor.parameters.getRawParameterValue("linearResolution")->load())]);const auto mouse=getLocalPoint(nullptr,juce::Desktop::getInstance().getMainMouseSource().getScreenPosition().toInt());const bool outputHover=output.getBounds().expanded(8).contains(mouse)||(outputPanel.isVisible()&&outputPanel.getBounds().expanded(6).contains(mouse));juce::ignoreUnused(outputHover);outputPanel.setVisible(false);outputBalance.setEnabled(eqProcessor.getMainBusNumOutputChannels()>1);outputBalanceMode.setEnabled(eqProcessor.getMainBusNumOutputChannels()>1);const int balanceDisplayMode=int(eqProcessor.parameters.getRawParameterValue("balanceMode")->load());if(int(outputBalance.getProperties().getWithDefault("displayMode",-1))!=balanceDisplayMode){outputBalance.getProperties().set("displayMode",balanceDisplayMode);outputBalance.updateText();}updateMidSideControls();const auto currentBand=eqProcessor.settings(selected);if(shapeButton.isVisible()!=(currentBand.enabled&&!panelDismissed)||(!knobDragging&&(panelBand!=selected||panelFrequency!=float(currentBand.frequency))))resized();solo.setToggleState(eqProcessor.auditionBand()>=0,juce::dontSendNotification);for(auto& card:bandCards)if(card)card->refresh();updateNodeAction();auto current=captureState();if(current!=observedState){observedState=std::move(current);stableTicks=0;}else if(++stableTicks>=10&&!dragging&&!frequency.isMouseButtonDown()&&!gain.isMouseButtonDown()&&!q.isMouseButtonDown()&&!threshold.isMouseButtonDown()&&!dynamicRange.isMouseButtonDown()&&!attack.isMouseButtonDown()&&!release.isMouseButtonDown()&&!output.isMouseButtonDown())commitHistory();undo.setEnabled(historyPosition>0||captureState()!=history[size_t(historyPosition)]);redo.setEnabled(historyPosition+1<int(history.size()));threshold.getProperties().set("detectorDb",eqProcessor.detectorLevel[size_t(selected)].load());thresholdLabel.setText("THRESHOLD",juce::dontSendNotification);if(analyzerMode!=0||showSidechain)updateAnalysis();else updateMeters();const auto p=eqProcessor.settings(selected);if(expanded!=(p.mode!=0)){expanded=p.mode!=0;resized();}modeSettings.setButtonText(juce::StringArray{"Static","Dynamic","Spectral"}[p.mode]);triggerButton.setEnabled(p.mode==1);triggerButton.setButtonText(p.mode==1&&p.freeTrigger?"Free":"Band");triggerButton.setTooltip("Trigger: "+juce::String(std::min(p.triggerLow,p.triggerHigh),0)+"–"+juce::String(std::max(p.triggerLow,p.triggerHigh),0)+" Hz (Free available in Dynamic mode)");const bool cut=p.shape==distillazione::Shape::LowCut||p.shape==distillazione::Shape::HighCut;shapeButton.getProperties().set("shape",int(p.shape));shapeButton.setButtonText(shapeNames[int(p.shape)]);for(auto* knob:std::initializer_list<juce::Slider*>{&frequency,&gain,&q})knob->setColour(juce::Slider::rotarySliderFillColourId,colour(selected));slope.setEnabled(cut);slopeButton.setEnabled(cut);slopeButton.setButtonText(juce::StringArray{"6","12","24","36","48","72","96"}[juce::jlimit(0,6,p.slope)]+" dB/oct");gain.setEnabled(p.shape==distillazione::Shape::Bell||p.shape==distillazione::Shape::LowShelf||p.shape==distillazione::Shape::HighShelf||p.shape==distillazione::Shape::TiltShelf||p.shape==distillazione::Shape::FlatTilt);repaint();}
 void EQEditor::mouseDown(const juce::MouseEvent& e) {
     if(e.eventComponent==&output){outputSticky=!outputSticky;outputPanel.setVisible(outputSticky);return;}
-    if(!plot.contains(e.position)||panel.expanded(0,24).contains(e.position))return;
+    if(!plot.contains(e.position)||(eqProcessor.settings(selected).enabled&&!panelDismissed&&panel.contains(e.position)))return;
     int nearest=-1;float distance=24;
     for(int i=0;i<24;++i){auto p=eqProcessor.settings(i);if(!p.enabled)continue;float d=e.position.getDistanceFrom({xFor(p.frequency),juce::jlimit(plot.getY()+8,plot.getBottom()-26,yFor(p.gain))});if(d<distance){nearest=i;distance=d;}}
     if(nearest<0)return;select(nearest);if(e.mods.isPopupMenu()){showBandMenu();return;}dragging=true;
     for(auto* field:{"frequency","gain"})eqProcessor.parameters.getParameter(EQProcessor::bandID(selected,field))->beginChangeGesture();
 }
 void EQEditor::mouseDrag(const juce::MouseEvent& e){if(!dragging)return;auto set=[this](const char* field,float value){auto* p=eqProcessor.parameters.getParameter(EQProcessor::bandID(selected,field));p->setValueNotifyingHost(p->convertTo0to1(value));};set("frequency",float(hzFor(e.position.x)));if(gain.isEnabled())set("gain",float(dbFor(e.position.y)));resized();repaint();}
-void EQEditor::mouseUp(const juce::MouseEvent&){if(!dragging)return;for(auto* field:{"frequency","gain"})eqProcessor.parameters.getParameter(EQProcessor::bandID(selected,field))->endChangeGesture();dragging=false;}
+void EQEditor::mouseUp(const juce::MouseEvent&){if(!dragging)return;for(auto* field:{"frequency","gain"})eqProcessor.parameters.getParameter(EQProcessor::bandID(selected,field))->endChangeGesture();dragging=false;resized();repaint();}
 void EQEditor::addBand(float hz,float db){for(int i=0;i<24;++i)if(!eqProcessor.settings(i).enabled){distillazione::BandSettings p;p.enabled=true;p.frequency=hz;p.gain=db;eqProcessor.copyBand(i,p);select(i);return;}}
-void EQEditor::mouseDoubleClick(const juce::MouseEvent& e){if(plot.contains(e.position)&&!panel.expanded(0,24).contains(e.position)){mouseUp(e);addBand(float(hzFor(e.position.x)),float(dbFor(e.position.y)));}}
-void EQEditor::mouseWheelMove(const juce::MouseEvent& e,const juce::MouseWheelDetails& wheel){if(plot.contains(e.position)&&!panel.expanded(0,24).contains(e.position)){auto p=eqProcessor.settings(selected);eqProcessor.setValue(EQProcessor::bandID(selected,"q"),float(p.q*std::pow(2.0,double(wheel.deltaY)*2)));}}
+void EQEditor::mouseDoubleClick(const juce::MouseEvent& e){if(plot.contains(e.position)&&!(eqProcessor.settings(selected).enabled&&!panelDismissed&&panel.contains(e.position))){mouseUp(e);addBand(float(hzFor(e.position.x)),float(dbFor(e.position.y)));}}
+void EQEditor::mouseWheelMove(const juce::MouseEvent& e,const juce::MouseWheelDetails& wheel){if(plot.contains(e.position)&&!(eqProcessor.settings(selected).enabled&&!panelDismissed&&panel.contains(e.position))){auto p=eqProcessor.settings(selected);eqProcessor.setValue(EQProcessor::bandID(selected,"q"),float(p.q*std::pow(2.0,double(wheel.deltaY)*2)));}}
 void EQEditor::preset(bool saving) {
     chooser=std::make_unique<juce::FileChooser>(saving?"Save EQ preset":"Load EQ preset",juce::File::getSpecialLocation(juce::File::userDocumentsDirectory),"*.deq");
     auto safe=juce::Component::SafePointer<EQEditor>(this);

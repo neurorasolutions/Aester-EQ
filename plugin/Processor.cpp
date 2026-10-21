@@ -37,11 +37,15 @@ juce::AudioProcessorValueTreeState::ParameterLayout EQProcessor::layout() {
     result.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"processingPhase",5},"Processing Mode",juce::StringArray{"Live","Analog FIR","Linear FIR"},0));
     result.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"linearResolution",5},"Linear Resolution",juce::StringArray{"Low","Medium","High","Very High","Maximum"},1));
     result.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{"mix",6},"Mix",juce::NormalisableRange<float>(0,1,.001f),1));
+    result.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{"midGain",8},"Output Mid gain",juce::NormalisableRange<float>(-24,12,.01f),0));
+    result.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{"sideGain",8},"Output Side gain",juce::NormalisableRange<float>(-24,12,.01f),0));
+    result.add(std::make_unique<juce::AudioParameterBool>(juce::ParameterID{"midInvert",8},"Output Mid polarity invert",false));
+    result.add(std::make_unique<juce::AudioParameterBool>(juce::ParameterID{"sideInvert",8},"Output Side polarity invert",false));
     return result;
 }
 EQProcessor::EQProcessor():AudioProcessor(BusesProperties().withInput("Input",juce::AudioChannelSet::stereo(),true).withInput("Sidechain",juce::AudioChannelSet::stereo(),false).withOutput("Output",juce::AudioChannelSet::stereo(),true)),parameters(*this,nullptr,"DistillazioneState",layout()) {
     for(int i=0;i<24;++i) raw[size_t(i)]={parameters.getRawParameterValue(bandID(i,"on")),parameters.getRawParameterValue(bandID(i,"shape")),parameters.getRawParameterValue(bandID(i,"frequency")),parameters.getRawParameterValue(bandID(i,"gain")),parameters.getRawParameterValue(bandID(i,"q")),parameters.getRawParameterValue(bandID(i,"slope")),parameters.getRawParameterValue(bandID(i,"mode")),parameters.getRawParameterValue(bandID(i,"placement")),parameters.getRawParameterValue(bandID(i,"threshold")),parameters.getRawParameterValue(bandID(i,"range")),parameters.getRawParameterValue(bandID(i,"attack")),parameters.getRawParameterValue(bandID(i,"release")),parameters.getRawParameterValue(bandID(i,"external")),parameters.getRawParameterValue(bandID(i,"free")),parameters.getRawParameterValue(bandID(i,"triggerLow")),parameters.getRawParameterValue(bandID(i,"triggerHigh"))};
-    mixRaw=parameters.getRawParameterValue("mix");
+    mixRaw=parameters.getRawParameterValue("mix");midGainRaw=parameters.getRawParameterValue("midGain");sideGainRaw=parameters.getRawParameterValue("sideGain");midInvertRaw=parameters.getRawParameterValue("midInvert");sideInvertRaw=parameters.getRawParameterValue("sideInvert");
     outputRaw=parameters.getRawParameterValue("output"); bypassRaw=parameters.getRawParameterValue("bypass");balanceRaw=parameters.getRawParameterValue("balance");balanceModeRaw=parameters.getRawParameterValue("balanceMode");invertRaw=parameters.getRawParameterValue("invert");phaseRaw=parameters.getRawParameterValue("processingPhase");resolutionRaw=parameters.getRawParameterValue("linearResolution");
     phase.configuration=[this]{PhaseEngine::Configuration config;config.mode=int(phaseRaw->load());config.resolution=int(resolutionRaw->load());config.rate=rate;config.channels=getMainBusNumOutputChannels();for(int i=0;i<24;++i){config.bands[size_t(i)]=settings(i);if(config.bands[size_t(i)].mode==1)config.dynamics[size_t(i)]=dynamicAmount[size_t(i)].load();}return config;};
     parameters.addParameterListener("processingPhase",this);parameters.addParameterListener("linearResolution",this);
@@ -72,6 +76,13 @@ void EQProcessor::prepareToPlay(double sr,int maxBlock) {
         b.mode=p.mode;b.placement=p.placement;
         b.shape=int(p.shape);b.slope=p.slope; p.enabled=true; b.coefficients=distillazione::designStaticBand(p,rate);
     }
+    auditionCurrent=-1;auditionRequest.store(-1);auditionState={};
+    auditionMix.reset(sr,.02);auditionMix.setCurrentAndTargetValue(0);
+    auditionFrequency.reset(sr,.025);auditionFrequency.setCurrentAndTargetValue(1000);
+    auditionQ.reset(sr,.025);auditionQ.setCurrentAndTargetValue(1);
+    midGain.reset(sr,.02);sideGain.reset(sr,.02);midPolarity.reset(sr,.02);sidePolarity.reset(sr,.02);
+    midGain.setCurrentAndTargetValue(juce::Decibels::decibelsToGain(double(midGainRaw->load())));sideGain.setCurrentAndTargetValue(juce::Decibels::decibelsToGain(double(sideGainRaw->load())));
+    midPolarity.setCurrentAndTargetValue(midInvertRaw->load()>.5f?-1:1);sidePolarity.setCurrentAndTargetValue(sideInvertRaw->load()>.5f?-1:1);
     blend.reset(sr,.02);blend.setCurrentAndTargetValue(mixRaw->load());
     output.reset(sr,0.02);output.setCurrentAndTargetValue(juce::Decibels::decibelsToGain(double(outputRaw->load())));
     balance.reset(sr,.02);balance.setCurrentAndTargetValue(balanceRaw->load());polarity.reset(sr,.02);polarity.setCurrentAndTargetValue(invertRaw->load()>.5f?-1:1);
@@ -105,11 +116,17 @@ void EQProcessor::processBlock(juce::AudioBuffer<float>& buffer,juce::MidiBuffer
             coefficientTick=0;
         }
     }
+    int requested=auditionRequest.load();
+    if(requested>=0&&!configured[size_t(requested)].enabled){requested=-1;auditionRequest.store(-1);}
+    if(requested!=auditionCurrent)auditionMix.setTargetValue(0);
+    else auditionMix.setTargetValue(requested>=0?1:0);
     const bool spectralActive=spectralModes.load()!=0;
     if(spectralActive!=spectralWasActive){spectral.clearHistory();spectralWasActive=spectralActive;}
     if(spectralActive)spectral.configure(configured);
     blend.setTargetValue(mixRaw->load());
     output.setTargetValue(juce::Decibels::decibelsToGain(double(outputRaw->load())));bypass.setTargetValue(bypassRaw->load()>0.5f?0:1);
+    midGain.setTargetValue(juce::Decibels::decibelsToGain(double(midGainRaw->load())));sideGain.setTargetValue(juce::Decibels::decibelsToGain(double(sideGainRaw->load())));
+    midPolarity.setTargetValue(midInvertRaw->load()>.5f?-1:1);sidePolarity.setTargetValue(sideInvertRaw->load()>.5f?-1:1);
     balance.setTargetValue(balanceRaw->load());polarity.setTargetValue(invertRaw->load()>.5f?-1:1);
     for(int sample=0;sample<buffer.getNumSamples();++sample) {
         std::array<double,2> original{},values{},key{};
@@ -145,13 +162,38 @@ void EQProcessor::processBlock(juce::AudioBuffer<float>& buffer,juce::MidiBuffer
             else{double difference=(routed[0]-(values[0]+(b.placement==3?values[1]:-values[1]))*.7071067811865476)*.7071067811865476;values[0]+=difference;values[1]+=(b.placement==3?difference:-difference);}
         }
         coefficientTick=(coefficientTick+1)%16;
-        const double level=output.getNextValue(),mix=bypass.getNextValue()*blend.getNextValue();
+        const double level=output.getNextValue(),bypassAmount=bypass.getNextValue(),mix=bypassAmount*blend.getNextValue();
         auto processed=values;
         if(spectralActive)processed=spectral.process(values,original,channels,mix,level,phaseMode?phase.keyAt(sample):key);
         else for(int ch=0;ch<channels;++ch)processed[size_t(ch)]=original[size_t(ch)]+(values[size_t(ch)]*level-original[size_t(ch)])*mix;
-        const double panValue=balance.getNextValue()*mix,pan=std::abs(panValue)<1e-6?0:panValue,sign=1+(polarity.getNextValue()-1)*mix;
-        if(channels==2){const double a=pan>0?1-pan:1,b=pan<0?1+pan:1;if(balanceModeRaw->load()>.5f){double mid=(processed[0]+processed[1])*.7071067811865476*a,side=(processed[0]-processed[1])*.7071067811865476*b;processed[0]=(mid+side)*.7071067811865476;processed[1]=(mid-side)*.7071067811865476;}else{processed[0]*=a;processed[1]*=b;}}
+        const double panValue=balance.getNextValue()*bypassAmount,pan=std::abs(panValue)<1e-6?0:panValue,sign=1+(polarity.getNextValue()-1)*bypassAmount;
+        const double midLevel=1+(midGain.getNextValue()-1)*bypassAmount,sideLevel=1+(sideGain.getNextValue()-1)*bypassAmount,midSign=1+(midPolarity.getNextValue()-1)*bypassAmount,sideSign=1+(sidePolarity.getNextValue()-1)*bypassAmount;
+        if(channels==2){const double a=pan>0?1-pan:1,b=pan<0?1+pan:1;if(balanceModeRaw->load()>.5f){double mid=(processed[0]+processed[1])*.7071067811865476*a*midLevel*midSign,side=(processed[0]-processed[1])*.7071067811865476*b*sideLevel*sideSign;processed[0]=(mid+side)*.7071067811865476;processed[1]=(mid-side)*.7071067811865476;}else{processed[0]*=a;processed[1]*=b;}}
         for(auto& value:processed)value*=sign;
+        // TPT state-variable monitor: smooth cutoffs and unity centre gain.
+        // It filters the final EQ output, retaining the host-reported processing delay.
+        if(requested!=auditionCurrent&&auditionMix.getCurrentValue()<1e-8){
+            auditionCurrent=requested;auditionState={};
+            if(auditionCurrent>=0){const auto& p=configured[size_t(auditionCurrent)];auditionFrequency.setCurrentAndTargetValue(p.frequency);auditionQ.setCurrentAndTargetValue(p.q);auditionMix.setTargetValue(1);}
+        }
+        if(auditionCurrent>=0){
+            const auto& p=configured[size_t(auditionCurrent)];
+            auditionFrequency.setTargetValue(p.frequency);auditionQ.setTargetValue(p.q);
+            const double hz=juce::jlimit(10.0,rate*.45,auditionFrequency.getNextValue());
+            const double smoothedQ=auditionQ.getNextValue();
+            const bool edgeMonitor=p.shape==distillazione::Shape::LowShelf||p.shape==distillazione::Shape::HighShelf||p.shape==distillazione::Shape::LowCut||p.shape==distillazione::Shape::HighCut;
+            const double g=std::tan(juce::MathConstants<double>::pi*hz/rate),k=edgeMonitor?std::sqrt(2.0):1/juce::jlimit(.1,20.0,smoothedQ);
+            const double a1=1/(1+g*(g+k)),a2=g*a1,a3=g*a2;
+            auto monitored=processed;
+            if(channels==2){if(p.placement==1)monitored[1]=0;else if(p.placement==2)monitored[0]=0;else if(p.placement==3){const double mid=(monitored[0]+monitored[1])*.5;monitored={mid,mid};}else if(p.placement==4){const double side=(monitored[0]-monitored[1])*.5;monitored={side,-side};}}
+            const double amount=auditionMix.getNextValue();
+            for(int ch=0;ch<channels;++ch){auto& st=auditionState[size_t(ch)];const double v3=monitored[size_t(ch)]-st[1],v1=a1*st[0]+a2*v3,v2=st[1]+a2*st[0]+a3*v3;st[0]=2*v1-st[0];st[1]=2*v2-st[1];
+                double isolated=k*v1;
+                if(p.shape==distillazione::Shape::LowShelf||p.shape==distillazione::Shape::HighCut)isolated=v2;
+                else if(p.shape==distillazione::Shape::HighShelf||p.shape==distillazione::Shape::LowCut)isolated=monitored[size_t(ch)]-k*v1-v2;
+                processed[size_t(ch)]+=(isolated-processed[size_t(ch)])*amount;
+            }
+        }else auditionMix.skip(1);
         for(int ch=0;ch<channels;++ch){double value=processed[size_t(ch)];if(!std::isfinite(value)||std::abs(value)>std::numeric_limits<float>::max())value=0;buffer.setSample(ch,sample,float(value));outPeak=std::max(outPeak,float(std::abs(value)));channelPeaks[size_t(ch)]=std::max(channelPeaks[size_t(ch)],float(std::abs(value)));}
         sidechainSpectrum.push(float(key[0]),float(key[1]),float(key[0]),float(key[1]));
         if(channels>0)spectrum.push(float(original[0]),float(original[size_t(channels>1?1:0)]),buffer.getSample(0,sample),buffer.getSample(channels>1?1:0,sample));
@@ -163,8 +205,8 @@ void EQProcessor::processBlock(juce::AudioBuffer<float>& buffer,juce::MidiBuffer
     channelOutputPeak[0].store(channelPeaks[0]);channelOutputPeak[1].store(channels>1?channelPeaks[1]:channelPeaks[0]);
 }
 void EQProcessor::setValue(const juce::String& id,float value) { if(auto* p=parameters.getParameter(id)) {p->beginChangeGesture();p->setValueNotifyingHost(p->convertTo0to1(value));p->endChangeGesture();} }
-void EQProcessor::getStateInformation(juce::MemoryBlock& data) {auto state=parameters.copyState();state.setProperty("schema",7,nullptr);if(auto xml=state.createXml())copyXmlToBinary(*xml,data);}
-void EQProcessor::setStateInformation(const void* data,int bytes) {if(auto xml=getXmlFromBinary(data,bytes))if(xml->hasTagName(parameters.state.getType())){auto incoming=juce::ValueTree::fromXml(*xml);for(auto* parameter:getParameters())if(auto* ranged=dynamic_cast<juce::RangedAudioParameter*>(parameter))if(!incoming.getChildWithProperty("id",ranged->paramID).isValid()){juce::ValueTree child("PARAM");child.setProperty("id",ranged->paramID,nullptr);child.setProperty("value",ranged->convertFrom0to1(ranged->getDefaultValue()),nullptr);incoming.appendChild(child,nullptr);}parameters.replaceState(incoming);}}
+void EQProcessor::getStateInformation(juce::MemoryBlock& data) {auto state=parameters.copyState();state.setProperty("schema",8,nullptr);if(auto xml=state.createXml())copyXmlToBinary(*xml,data);}
+void EQProcessor::setStateInformation(const void* data,int bytes) {auditionRequest.store(-1);if(auto xml=getXmlFromBinary(data,bytes))if(xml->hasTagName(parameters.state.getType())){auto incoming=juce::ValueTree::fromXml(*xml);for(auto* parameter:getParameters())if(auto* ranged=dynamic_cast<juce::RangedAudioParameter*>(parameter))if(!incoming.getChildWithProperty("id",ranged->paramID).isValid()){juce::ValueTree child("PARAM");child.setProperty("id",ranged->paramID,nullptr);child.setProperty("value",ranged->convertFrom0to1(ranged->getDefaultValue()),nullptr);incoming.appendChild(child,nullptr);}parameters.replaceState(incoming);}}
 juce::AudioProcessorEditor* EQProcessor::createEditor(){return new EQEditor(*this);}
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter(){return new EQProcessor();}
 

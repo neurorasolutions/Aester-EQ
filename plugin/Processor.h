@@ -32,6 +32,10 @@ public:
     juce::String instanceName() const {const juce::ScopedLock lock(trackLock);return trackName;}
     static juce::String bandID(int band, const char* field);
     distillazione::BandSettings settings(int band) const;
+    // Monitoring only: not automated or stored in presets. -1 restores normal output.
+    std::atomic<int> editorWidth{1000},editorHeight{700};
+    void setAuditionBand(int band) { auditionRequest.store(juce::jlimit(-1,23,band)); }
+    int auditionBand() const { return auditionRequest.load(); }
     bool phaseReady()const{return phase.isReady();}
     bool splitBand(int);
     void copyBand(int,const distillazione::BandSettings&);
@@ -81,8 +85,12 @@ private:
     PhaseEngine phase;
     std::array<Raw,24> raw;
     std::array<Runtime,24> bands;
-    std::atomic<float> *outputRaw,*bypassRaw,*balanceRaw,*balanceModeRaw,*invertRaw,*phaseRaw,*resolutionRaw,*mixRaw;
-    juce::SmoothedValue<double> output, bypass,balance,polarity,blend;
+    std::atomic<float> *outputRaw,*bypassRaw,*balanceRaw,*balanceModeRaw,*invertRaw,*phaseRaw,*resolutionRaw,*mixRaw,*midGainRaw,*sideGainRaw,*midInvertRaw,*sideInvertRaw;
+    juce::SmoothedValue<double> output, bypass,balance,polarity,blend,midGain,sideGain,midPolarity,sidePolarity;
+    std::atomic<int> auditionRequest{-1};
+    int auditionCurrent=-1;
+    juce::SmoothedValue<double> auditionMix,auditionFrequency,auditionQ;
+    std::array<std::array<double,2>,2> auditionState{};
     double rate=48000;
     int coefficientTick=0,lastPhaseMode=0;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EQProcessor)

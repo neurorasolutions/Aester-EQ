@@ -46,13 +46,25 @@ public:
     void updateAnalysis(){updateMeters();if(!analyzerFrozen){spectrum.update(eqProcessor.spectrum);if(showSidechain)sidechainDisplay.update(eqProcessor.sidechainSpectrum);}threshold.getProperties().set("detectorDb",eqProcessor.detectorLevel[size_t(selected)].load());repaint();}
     void mouseWheelMove(const juce::MouseEvent&,const juce::MouseWheelDetails&) override;
 private:
+    juce::TextButton solo{"SOLO"},closePanel{"x"};
+    bool panelDismissed=false;
+    bool panelBelow=true;
+    bool knobDragging=false;
+    float panelFrequency=-1;
+    int panelBand=-1;
     class BandCard;
     std::array<std::unique_ptr<BandCard>,24> bandCards;
     int bandPage=0;
     juce::TextButton previousPage{"<"},nextPage{">"};
     juce::Label pageLabel;
     class OutputPanel final:public juce::Component {public:void paint(juce::Graphics& g)override{g.setColour(juce::Colour(0xff25212d));g.fillRoundedRectangle(getLocalBounds().toFloat(),9);g.setColour(juce::Colour(0xff68606e));g.drawRoundedRectangle(getLocalBounds().toFloat().reduced(1),9,1);}};
-    OutputPanel outputPanel;
+    OutputPanel outputPanel,midSidePanel;
+    juce::Slider midOutput,sideOutput;
+    juce::ToggleButton midInvert{"INV MID"},sideInvert{"INV SIDE"};
+    juce::Label midLabel,sideLabel,midSideTitle;
+    void updateMidSideControls();
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> midOutputAttachment,sideOutputAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> midInvertAttachment,sideInvertAttachment;
     juce::Slider outputKnob,outputBalance;
     juce::ComboBox outputBalanceMode;
     juce::ToggleButton outputInvert{"INV"};

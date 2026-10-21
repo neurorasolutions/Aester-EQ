@@ -31,7 +31,7 @@ if(BUILD_PLUGIN)
     list(APPEND AESTER_FORMATS AAX)
   endif()
   juce_add_plugin(DistillazioneEQ
-    VERSION 1.1.0 COMPANY_NAME "Neurora" COMPANY_WEBSITE "https://www.neurora.it" COMPANY_COPYRIGHT "Copyright (c) 2026 Neurora"
+    VERSION 1.2.0 COMPANY_NAME "Neurora" COMPANY_WEBSITE "https://www.neurora.it" COMPANY_COPYRIGHT "Copyright (c) 2026 Neurora"
     BUNDLE_ID "it.neurora.aestereq"
     PLUGIN_MANUFACTURER_CODE NrAu PLUGIN_CODE AeEQ
     FORMATS ${AESTER_FORMATS} PRODUCT_NAME "Aester EQ"

@@ -2,9 +2,9 @@
 
 A 24-band equalizer for focused tonal shaping, dynamic control and frequency-selective spectral processing.
 
-![Aester EQ](assets/aester-multiband.png)
+![Aester EQ](assets/aester-focus.png)
 
-A wide response workspace sits above six compact band cards. Each card offers numeric frequency, gain and Q editing, while the right-hand rail keeps output, balance, Mix and phase controls available. Four pages provide access to all 24 band slots.
+A compact, resizable response workspace uses floating controls for the selected band and fluorescent yellow accents. The footer contains rotary Balance, Mix and Output controls. Selecting Mid / Side automatically opens independent component levels and polarity controls. [Focus UI and monitoring](docs/FOCUS_UI.md).
 
 ## Processing
 
@@ -15,11 +15,15 @@ A wide response workspace sits above six compact band cards. Each card offers nu
 - Live IIR, Analog FIR and five Linear FIR resolutions.
 - **Mix:** a smoothed, latency-aligned blend between dry and processed audio.
 - **Freeze:** hold the spectrum display while processing and output meters continue.
+- **Solo:** temporarily audition the selected frequency region with Q-linked bandwidth.
+- Independent Mid/Side output gain and polarity after Mix.
 - Pre/post/sidechain spectrum, output balance, polarity, presets, Undo/Redo and editor-local A/B.
 
 The graph displays the **wet response before Mix**. Blending dry and wet can change the resulting frequency response because filter phase is part of the sum.
 
 ## Downloads
+
+The current source preview is 1.2.0. The macOS download below remains the earlier 1.1.0 package and does not include the Focus UI changes.
 
 | Platform | Package | Status |
 |---|---|---|

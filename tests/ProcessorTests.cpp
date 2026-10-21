@@ -56,17 +56,65 @@ int main(int argc,char** argv) {
         }
         {
             auto ui=std::make_unique<EQProcessor>();std::unique_ptr<juce::AudioProcessorEditor> editor(ui->createEditor());
-            auto findCard=[&](const juce::String& name)->juce::Component*{for(auto* c:editor->getChildren())if(c->getName()==name)return c;return nullptr;};
-            auto* first=findCard("bandCard1");auto* seventh=findCard("bandCard7");require(first&&seventh,"Paged band cards exist");
-            for(auto* c:first->getChildren())if(auto* title=dynamic_cast<juce::TextButton*>(c))title->onClick();
-            require(ui->settings(0).enabled,"Inactive card header enables its band");
-            for(auto* c:first->getChildren())if(auto* slider=dynamic_cast<juce::Slider*>(c))if(slider->getTooltip()=="Band frequency (Hz)")slider->setValue(3200,juce::sendNotificationSync);
-            require(std::abs(ui->settings(0).frequency-3200)<1,"Card frequency attachment edits the correct band");
-            for(auto* c:editor->getChildren())if(auto* b=dynamic_cast<juce::Button*>(c))if(b->getTooltip()=="Next six bands")b->onClick();
-            require(!first->isVisible()&&seventh->isVisible(),"Next page switches the visible six band cards");
+            juce::Slider* freq=nullptr;juce::Button* solo=nullptr;juce::Button* add=nullptr;
+            for(auto* c:editor->getChildren()){
+                if(auto* slider=dynamic_cast<juce::Slider*>(c))if(slider->getTooltip().startsWith("Frequency of the selected"))freq=slider;
+                if(auto* button=dynamic_cast<juce::Button*>(c)){if(button->getButtonText()=="SOLO")solo=button;if(button->getButtonText()=="+ Add band")add=button;}
+            }
+            require(freq&&solo&&add,"Focus frequency, Solo and add controls exist");
+            require(editor->getWidth()==1000&&editor->getHeight()==700,"Compact initial editor size");
+            require(editor->isResizable(),"Editor supports host and corner resizing");
+            require(!freq->isVisible(),"No floating controls without a band");
+            add->onClick();require(freq->isVisible(),"Adding band reveals floating controls");
+            const auto initial=freq->getPosition();freq->onDragStart();freq->setValue(3200,juce::sendNotificationSync);editor->resized();
+            require(freq->getPosition()==initial,"Panel stays fixed while turning frequency knob");
+            freq->onDragEnd();require(freq->getPosition()!=initial,"Panel follows frequency after knob release");
+            solo->setToggleState(true,juce::dontSendNotification);solo->onClick();require(ui->auditionBand()==0,"Solo auditions the selected band");
+            editor->setSize(960,680);require(editor->getLocalBounds().contains(freq->getBoundsInParent()),"Frequency knob fits compact editor");
+            editor->setSize(1440,960);editor.reset();require(ui->auditionBand()==-1,"Closing editor releases Solo");
+            editor.reset(ui->createEditor());require(editor->getWidth()==1440&&editor->getHeight()==960,"Reopened editor retains instance window size");
+        }
+        {
+            // Measured auditory region, state/latency invariance, stereo routing and realtime safety.
+            for(double sr:{44100.,48000.,96000.}){
+                auto p=std::make_unique<EQProcessor>();p->setValue(EQProcessor::bandID(0,"on"),1);p->setValue(EQProcessor::bandID(0,"frequency"),1000);p->setValue(EQProcessor::bandID(0,"q"),4);p->prepareToPlay(sr,128);const int latency=p->getLatencySamples();
+                juce::MidiBuffer midi;juce::AudioBuffer<float> b(2,128);
+                auto rms=[&](double hz){double sum=0;int n=0;for(int block=0;block<160;++block){for(int i=0;i<128;++i){const float v=float(.1*std::sin(juce::MathConstants<double>::twoPi*hz*(block*128+i)/sr));b.setSample(0,i,v);b.setSample(1,i,v);}auditCallback=true;p->processBlock(b,midi);auditCallback=false;if(block>80)for(int i=0;i<128;++i){sum+=b.getSample(0,i)*b.getSample(0,i);++n;}}return std::sqrt(sum/n);};
+                const size_t allocations=callbackAllocations;p->setAuditionBand(0);const double centre=rms(1000),outside=rms(100);
+                require(centre>.065&&centre<.076,"Solo has unity centre gain");require(outside<centre*.04,"Solo attenuates frequencies outside selected Q region");require(p->getLatencySamples()==latency,"Solo does not alter processing latency");require(callbackAllocations==allocations,"Solo does not allocate in audio callback");
+                p->setAuditionBand(-1);require(rms(100)>.065,"Exiting Solo restores full bandwidth");
+                p->setAuditionBand(0);p->setValue(EQProcessor::bandID(0,"placement"),4);require(rms(1000)<1e-6,"Side Solo rejects correlated stereo input");
+                juce::MemoryBlock state;p->getStateInformation(state);auto loaded=std::make_unique<EQProcessor>();loaded->setStateInformation(state.getData(),int(state.getSize()));require(loaded->auditionBand()==-1,"Solo is never recalled from presets");
+                p->setValue(EQProcessor::bandID(0,"on"),0);rms(1000);require(p->auditionBand()==-1,"Disabling auditioned band exits Solo");
+            }
+        }
+        {
+            auto p=std::make_unique<EQProcessor>();p->setValue("mix",0);p->prepareToPlay(48000,128);auto editor=std::unique_ptr<juce::AudioProcessorEditor>(p->createEditor());
+            juce::Slider *pan=nullptr,*mix=nullptr,*out=nullptr;
+            for(auto* child:editor->getChildren())if(auto* s=dynamic_cast<juce::Slider*>(child)){if(s->getTooltip().startsWith("Output balance after Mix"))pan=s;if(s->getTooltip().startsWith("Latency-aligned dry/wet"))mix=s;if(s->getTooltip().startsWith("Output volume."))out=s;}
+            require(pan&&mix&&out,"Global output knobs are present");for(auto* s:{pan,mix,out})require(s->getSliderStyle()==juce::Slider::RotaryHorizontalVerticalDrag,"Global controls use rotary knobs");
+            pan->setValue(1,juce::sendNotificationSync);require(p->parameters.getRawParameterValue("balance")->load()>.999f,"Balance knob reaches the processor parameter");
+            juce::MidiBuffer midi;juce::AudioBuffer<float> b(2,128);
+            auto render=[&]{for(int block=0;block<24;++block){for(int i=0;i<128;++i){b.setSample(0,i,.2f);b.setSample(1,i,.1f);}p->processBlock(b,midi);}};
+            render();require(std::abs(b.getSample(0,127))<1e-6&&std::abs(b.getSample(1,127)-.1f)<1e-6,"Global balance works with a fully dry Mix");
+            p->setValue("bypass",1);render();require(std::abs(b.getSample(0,127)-.2f)<1e-6&&std::abs(b.getSample(1,127)-.1f)<1e-6,"Bypass releases global balance");
+        }
+        {
+            for(float mix:{0.f,1.f})for(int invM:{0,1})for(int invS:{0,1}){
+                auto p=std::make_unique<EQProcessor>();p->setValue("balanceMode",1);p->setValue("mix",mix);p->setValue("midInvert",float(invM));p->setValue("sideInvert",float(invS));p->prepareToPlay(48000,128);
+                juce::MidiBuffer midi;juce::AudioBuffer<float> b(2,128);for(int i=0;i<128;++i){b.setSample(0,i,.2f);b.setSample(1,i,.1f);}p->processBlock(b,midi);
+                const double mid=.15*(invM?-1:1),side=.05*(invS?-1:1);require(std::abs(b.getSample(0,127)-mid-side)<1e-6&&std::abs(b.getSample(1,127)-mid+side)<1e-6,"Independent Mid/Side polarity decodes correctly at all Mix settings");
+                p->setValue("bypass",1);for(int block=0;block<24;++block){for(int i=0;i<128;++i){b.setSample(0,i,.2f);b.setSample(1,i,.1f);}p->processBlock(b,midi);}require(std::abs(b.getSample(0,127)-.2f)<1e-6&&std::abs(b.getSample(1,127)-.1f)<1e-6,"Bypass releases Mid/Side polarity");
+            }
+            for(bool mid:{false,true}){auto p=std::make_unique<EQProcessor>();p->setValue("balanceMode",1);p->setValue(mid?"midGain":"sideGain",6.0206f);p->prepareToPlay(48000,128);juce::MidiBuffer midi;juce::AudioBuffer<float> b(2,128);for(int i=0;i<128;++i){b.setSample(0,i,.2f);b.setSample(1,i,.1f);}p->processBlock(b,midi);require(std::abs(b.getSample(0,127)-(mid?.35:.25))<.0001&&std::abs(b.getSample(1,127)-(mid?.25:.05))<.0001,"Independent Mid/Side output gain is correct");juce::MemoryBlock state;p->getStateInformation(state);auto loaded=std::make_unique<EQProcessor>();loaded->setStateInformation(state.getData(),int(state.getSize()));require(loaded->parameters.getRawParameterValue(mid?"midGain":"sideGain")->load()>6,"Mid/Side gain is recalled from state");}
+        }
+        {
+            auto p=std::make_unique<EQProcessor>();auto editor=std::unique_ptr<juce::AudioProcessorEditor>(p->createEditor());juce::ComboBox* mode=nullptr;juce::Slider* mid=nullptr;juce::ToggleButton* inv=nullptr;
+            for(auto* c:editor->getChildren()){if(auto* box=dynamic_cast<juce::ComboBox*>(c))if(box->getTooltip()=="Choose Left/Right or Mid/Side output balance.")mode=box;for(auto* child:c->getChildren()){if(auto* s=dynamic_cast<juce::Slider*>(child))if(s->getTooltip().startsWith("Mid output gain:"))mid=s;if(auto* t=dynamic_cast<juce::ToggleButton*>(child))if(t->getTooltip().startsWith("Invert only the Mid"))inv=t;}}
+            require(mode&&mid&&inv,"Mid/Side selector and controls are connected");mode->setSelectedId(2,juce::sendNotificationSync);require(p->parameters.getRawParameterValue("balanceMode")->load()>.5f,"UI selector actually enables Mid/Side processing");require(mid->isVisible()&&mid->getParentComponent()->isVisible(),"Selecting Mid/Side automatically reveals controls");mid->setValue(3,juce::sendNotificationSync);inv->setToggleState(true,juce::sendNotificationSync);require(std::abs(p->parameters.getRawParameterValue("midGain")->load()-3)<.01&&p->parameters.getRawParameterValue("midInvert")->load()>.5f,"Mid level and polarity controls reach their audio parameters");mode->setSelectedId(1,juce::sendNotificationSync);require(!mid->getParentComponent()->isVisible(),"Selecting L/R automatically hides Mid/Side controls");
         }
         EQProcessor processor;for(int i=0;i<24;++i)require(!processor.settings(i).enabled,"New instance starts without points");processor.setValue(EQProcessor::bandID(0,"on"),1);
-        require(processor.getParameters().size()==392,"Stable parameter count");
+        require(processor.getParameters().size()==396,"Stable parameter count");
         juce::MidiBuffer midi;
         for(double sr:{44100.,48000.,96000.}) {
             processor.prepareToPlay(sr,128);
@@ -221,7 +269,7 @@ int main(int argc,char** argv) {
             auto button=[&](const char* tooltip)->juce::Button* {for(auto* child:editor->getChildren())if(auto* b=dynamic_cast<juce::Button*>(child))if(b->getTooltip()==tooltip)return b;return nullptr;};
             auto* freeze=button("Freeze the spectrum display while audio and meters continue.");require(freeze!=nullptr,"Analyzer Freeze control exists");freeze->onClick();require(freeze->getButtonText()=="Resume","Freeze exposes Resume action");freeze->onClick();require(freeze->getButtonText()=="Freeze","Resume returns to live spectrum");
             auto* undo=button("Undo");auto* redo=button("Redo");auto* ab=button("Switch between A and B");auto* copy=button("Copy current setting to the other A/B slot");require(undo&&redo&&ab&&copy,"Operational comparison toolbar exists");
-            require(button("Toggle editor size"),"Band menu and resize controls are attached to the editor");
+            require(button("Choose a window size, or drag the lower-right corner to resize freely."),"Band menu and resize controls are attached to the editor");
             ui.setValue(EQProcessor::bandID(0,"gain"),6);undo->onClick();require(std::abs(ui.settings(0).gain)<.01,"Editor Undo restores previous setting");redo->onClick();require(std::abs(ui.settings(0).gain-6)<.01,"Editor Redo restores edited setting");
             ab->onClick();require(std::abs(ui.settings(0).gain)<.01,"A/B recalls independent B setting");ui.setValue(EQProcessor::bandID(0,"gain"),-3);copy->onClick();ab->onClick();require(std::abs(ui.settings(0).gain+3)<.01,"Comparison Copy copies current slot to other slot");
         }
@@ -234,10 +282,13 @@ int main(int argc,char** argv) {
                 const float frequencies[]{45,180,800,3400,7000,14000},gains[]{0,2.5f,-1.5f,-4,2,0};
                 for(int band=0;band<6;++band){distillazione::BandSettings setting;setting.enabled=true;setting.frequency=frequencies[band];setting.gain=gains[band];setting.q=.8;setting.shape=band==0?distillazione::Shape::LowCut:band==5?distillazione::Shape::HighCut:distillazione::Shape::Bell;setting.mode=band==3?1:0;restored.copyBand(band,setting);}restored.setValue("mix",.85f);
             }
+            if(argc>2&&juce::String(argv[2])=="--snapshot-solo"){restored.setValue(EQProcessor::bandID(0,"gain"),4);distillazione::BandSettings other;other.enabled=true;other.frequency=6000;other.gain=-6;restored.copyBand(1,other);}
             std::unique_ptr<juce::AudioProcessorEditor> editor(restored.createEditor());
             restored.prepareToPlay(48000,128);
             juce::AudioBuffer<float> signal(2,128);
             for(int block=0;block<128;++block){for(int i=0;i<128;++i){double t=double(block*128+i)/48000;float sample=0;for(int harmonic=1;harmonic<=((argc>2&&juce::String(argv[2])=="--snapshot-empty")?0:28);++harmonic)sample+=float(.009/std::sqrt(double(harmonic))*std::sin(juce::MathConstants<double>::twoPi*(37*harmonic*harmonic)*t));signal.setSample(0,i,sample);signal.setSample(1,i,-sample);}restored.processBlock(signal,midi);if(block%16==15)static_cast<EQEditor*>(editor.get())->updateAnalysis();}
+            if(argc>2&&juce::String(argv[2])=="--snapshot-ms"){for(auto* c:editor->getChildren())if(auto* box=dynamic_cast<juce::ComboBox*>(c))if(box->getTooltip()=="Choose Left/Right or Mid/Side output balance.")box->setSelectedId(2,juce::sendNotificationSync);}
+            if(argc>2&&juce::String(argv[2])=="--snapshot-solo"){restored.setAuditionBand(0);editor->resized();for(auto* c:editor->getChildren())if(auto* button=dynamic_cast<juce::Button*>(c))if(button->getButtonText()=="SOLO")button->setToggleState(true,juce::dontSendNotification);}
             if(argc>2&&juce::String(argv[2])=="--snapshot-output")for(auto* child:editor->getChildren())for(auto* nested:child->getChildren())if(auto* box=dynamic_cast<juce::ComboBox*>(nested))if(box->getText()=="L/R")child->setVisible(true);
             if(argc>2&&juce::String(argv[2])=="--snapshot-small")editor->setSize(1120,780);
             if(argc>2&&juce::String(argv[2])=="--snapshot-frozen"){for(auto* child:editor->getChildren())if(auto* button=dynamic_cast<juce::TextButton*>(child))if(button->getButtonText()=="Freeze")button->onClick();}
