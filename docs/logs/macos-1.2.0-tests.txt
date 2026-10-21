@@ -1,0 +1,19 @@
+Test project build-macos
+    Start 1: plugin_processor
+1/7 Test #1: plugin_processor .................   Passed    3.17 sec
+    Start 2: response_math
+2/7 Test #2: response_math ....................   Passed    0.00 sec
+    Start 3: recovered_parameters
+3/7 Test #3: recovered_parameters .............   Passed    0.00 sec
+    Start 4: root_sections
+4/7 Test #4: root_sections ....................   Passed    0.00 sec
+    Start 5: digital_sections
+5/7 Test #5: digital_sections .................   Passed    0.00 sec
+    Start 6: filter_prototypes
+6/7 Test #6: filter_prototypes ................   Passed    0.00 sec
+    Start 7: static_eq
+7/7 Test #7: static_eq ........................   Passed    0.01 sec
+
+100% tests passed out of 7
+
+Total Test time (real) =   3.20 sec

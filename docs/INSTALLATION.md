@@ -4,11 +4,11 @@ Close your DAW and save sessions before installation.
 
 ## macOS Apple Silicon
 
-Open the DMG and run `Aester-EQ-Neurora-Installer.pkg`. It installs `Aester EQ.component` in `/Library/Audio/Plug-Ins/Components` and `Aester EQ.app` in `/Applications`. Restart the DAW and look for Neurora / Aester EQ. Distribution signing and notarization are not configured.
+Download `Aester-EQ-Neurora-1.2.0-macOS-arm64.dmg` from the [1.2.0 release](https://github.com/neurorasolutions/Aester-EQ/releases/tag/aester-v1.2.0). Open the DMG and run `Aester-EQ-Neurora-Installer.pkg`. It installs `Aester EQ.component` in `/Library/Audio/Plug-Ins/Components` and `Aester EQ.app` in `/Applications`. Restart the DAW and look for Neurora / Aester EQ. Distribution signing and notarization are not configured.
 
 ## Windows x64
 
-Run `Aester-EQ-Neurora-1.1.0-Windows-x64.exe`. VST3 installs in `C:\Program Files\Common Files\VST3\Aester EQ.vst3`; standalone defaults to `C:\Program Files\Neurora\Aester EQ`. Restart and rescan the DAW. The unsigned installer needs administrator permission. If runtime DLLs are missing, use the official Microsoft Visual C++ x64 Redistributable, not individual DLL download sites.
+When a Windows installer is provided for your chosen release, run its `.exe`. The macOS 1.2.0 release does not include a new Windows installer. VST3 installs in `C:\Program Files\Common Files\VST3\Aester EQ.vst3`; standalone defaults to `C:\Program Files\Neurora\Aester EQ`. Restart and rescan the DAW. The unsigned installer needs administrator permission. If runtime DLLs are missing, use the official Microsoft Visual C++ x64 Redistributable, not individual DLL download sites.
 
 Windows interactive installation/DAW testing must be distinguished from build/CTest results. Use the Apps uninstaller to remove the package. User presets and sessions are not intentionally removed.
 

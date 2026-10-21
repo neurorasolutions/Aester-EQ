@@ -1,13 +1,13 @@
 # Changelog
 
-## Aester EQ 1.2.0 — source preview
+## Aester EQ 1.2.0 — macOS preview
 
 - Compact resizable Focus UI with a floating selected-band panel and fluorescent yellow highlights.
 - Q-linked Solo monitoring with smooth transitions and editor-close reset.
 - Rotary Balance, Mix and Output controls; global balance remains active at 0% Mix.
 - Automatic Mid/Side output panel with separate component gain and polarity.
 - State schema 8 preserves existing parameter IDs and defaults missing Mid/Side controls safely.
-- macOS processor suites and installed AU validation passed; a new installer is not included in this source update.
+- macOS processor suites and installed AU validation passed; the rebuilt macOS ARM64 DMG includes AU, standalone and matching source.
 
 ## Aester EQ 1.1.0 — development preview
 

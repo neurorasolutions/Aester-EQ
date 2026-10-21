@@ -1,3 +1,3 @@
 #!/bin/bash
-# Aster EQ installs alongside other Neurora products; no migration is performed.
+# Aester EQ installs alongside other Neurora products; no migration is performed.
 exit 0
