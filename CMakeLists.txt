@@ -31,11 +31,11 @@ if(BUILD_PLUGIN)
     list(APPEND AESTER_FORMATS AAX)
   endif()
   juce_add_plugin(DistillazioneEQ
-    VERSION 1.2.0 COMPANY_NAME "Neurora" COMPANY_WEBSITE "https://www.neurora.it" COMPANY_COPYRIGHT "Copyright (c) 2026 Neurora"
-    BUNDLE_ID "it.neurora.aestereq"
-    PLUGIN_MANUFACTURER_CODE NrAu PLUGIN_CODE AeEQ
+    VERSION 1.3.0 COMPANY_NAME "DropDownAcademy" COMPANY_WEBSITE "https://www.dropdownacademy.com" COMPANY_COPYRIGHT "Copyright (c) 2026 DropDownAcademy"
+    BUNDLE_ID "com.dropdownacademy.aestereq"
+    PLUGIN_MANUFACTURER_CODE DdAc PLUGIN_CODE AeEQ
     FORMATS ${AESTER_FORMATS} PRODUCT_NAME "Aester EQ"
-    AAX_IDENTIFIER "it.neurora.aestereq.aax" AAX_CATEGORY EQ
+    AAX_IDENTIFIER "com.dropdownacademy.aestereq.aax" AAX_CATEGORY EQ
     IS_SYNTH FALSE NEEDS_MIDI_INPUT FALSE NEEDS_MIDI_OUTPUT FALSE
     IS_MIDI_EFFECT FALSE COPY_PLUGIN_AFTER_BUILD FALSE)
   target_sources(DistillazioneEQ PRIVATE plugin/Processor.cpp plugin/Editor.cpp)

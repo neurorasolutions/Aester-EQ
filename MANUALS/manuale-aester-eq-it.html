@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Aester EQ — Manuale d'uso</title>
+<style>
+  :root{
+    --ink:#1b2422; --muted:#5c6b68; --line:#dfe4e2; --accent:#c8a800;
+    --panel:#f6f7f6; --dark:#1a2024;
+  }
+  @page{ size:A4; margin:20mm 18mm 18mm 18mm; }
+  *{box-sizing:border-box}
+  body{margin:0; font:11pt/1.55 -apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif; color:var(--ink)}
+  h1,h2,h3{line-height:1.2; margin:0}
+  h2{font-size:19pt; margin:26pt 0 8pt; padding-bottom:5pt; border-bottom:1.5pt solid var(--ink); page-break-after:avoid}
+  h3{font-size:12.5pt; margin:16pt 0 4pt; page-break-after:avoid}
+  p{margin:0 0 7pt}
+  ul,ol{margin:0 0 8pt; padding-left:15pt}
+  li{margin:0 0 3pt}
+  table{width:100%; border-collapse:collapse; margin:6pt 0 10pt; font-size:9.5pt; page-break-inside:avoid}
+  th,td{border-bottom:.6pt solid var(--line); padding:5pt 6pt; text-align:left; vertical-align:top}
+  th{background:var(--panel); font-weight:600}
+  td.k{width:32%; font-weight:600}
+  code{font:9.5pt "SF Mono",Menlo,monospace; background:var(--panel); padding:1pt 3pt; border-radius:2pt}
+  .cover{height:247mm; display:flex; flex-direction:column; justify-content:space-between; page-break-after:always}
+  .cover .logo{width:78mm; margin-top:8mm}
+  .cover h1{font-size:44pt; letter-spacing:-.5pt; margin:0 0 2mm}
+  .cover .sub{font-size:16pt; color:var(--muted); margin:0}
+  .cover .meta{font-size:10pt; color:var(--muted); line-height:1.8}
+  .cover .rule{height:3mm; background:var(--accent); width:38mm; margin:6mm 0}
+  .note{background:var(--panel); border-left:3pt solid var(--accent); padding:8pt 10pt; margin:8pt 0; font-size:10pt}
+  .warn{border-left-color:#c0392b}
+  .toc{font-size:10.5pt; columns:2; column-gap:12mm}
+  .toc a{color:var(--ink); text-decoration:none}
+  .shot{width:100%; border-radius:3pt; margin:8pt 0 4pt}
+  .cap{font-size:8.5pt; color:var(--muted); margin:0 0 12pt}
+  .kv td:first-child{font-weight:600; width:34%}
+  .small{font-size:9pt; color:var(--muted)}
+  footer{margin-top:24pt; padding-top:6pt; border-top:.6pt solid var(--line); font-size:8.5pt; color:var(--muted)}
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div>
+    <img class="logo" src="../assets/dropdownacademy-logo.png" alt="DropDownAcademy">
+    <div class="rule"></div>
+    <h1>Aester EQ</h1>
+    <p class="sub">Manuale d'uso</p>
+  </div>
+  <div>
+    <p class="meta">
+      Versione 1.3.0 — edizione DropDownAcademy<br>
+      Equalizzatore a 24 bande con processing statico, dinamico e spettrale<br>
+      macOS Apple Silicon · Windows x64<br><br>
+      www.dropdownacademy.com
+    </p>
+  </div>
+</section>
+
+<h2>Indice</h2>
+<nav class="toc">
+  <p><a href="#c1">1. Che cos'è Aester EQ</a><br>
+  <a href="#c2">2. Requisiti e installazione</a><br>
+  <a href="#c3">3. Primo avvio</a><br>
+  <a href="#c4">4. L'interfaccia</a><br>
+  <a href="#c5">5. Le bande</a><br>
+  <a href="#c6">6. Static, Dynamic, Spectral</a><br>
+  <a href="#c7">7. Posizione stereo</a><br>
+  <a href="#c8">8. Motore, fase e latenza</a><br>
+  <a href="#c9">9. Mix</a><br>
+  <a href="#c10">10. Solo</a><br>
+  <a href="#c11">11. Analizzatore e Freeze</a><br>
+  <a href="#c12">12. Uscita, bilanciamento e Mid/Side</a><br>
+  <a href="#c13">13. Preset, Undo/Redo, A/B</a><br>
+  <a href="#c14">14. Esempi pratici</a><br>
+  <a href="#c15">15. Cosa il plugin non fa</a><br>
+  <a href="#c16">16. Risoluzione dei problemi</a><br>
+  <a href="#c17">17. Specifiche e licenza</a></p>
+</nav>
+
+<h2 id="c1">1. Che cos'è Aester EQ</h2>
+<p>Aester EQ è un equalizzatore a 24 bande pensato per lavorare in modo mirato: poche bande, molto controllo, e la possibilità di scegliere per ogni banda se il guadagno debba essere fisso (Static), pilotato dal livello del segnale (Dynamic) o applicato per frequenze (Spectral).</p>
+<p>Il percorso statico usa filtri lineari: il timbro cambia per guadagno e larghezza di banda, senza saturazione intenzionale. La modalità Dynamic legge un level detector e muove il guadagno del filtro; la modalità Spectral lavora su una trasformata a breve termine per intervenire su regioni di frequenza.</p>
+<p>Il plugin è distribuito in formato Audio Unit e standalone su macOS e VST3 e standalone su Windows.</p>
+
+<h2 id="c2">2. Requisiti e installazione</h2>
+<h3>Requisiti</h3>
+<table class="kv">
+  <tr><td>macOS</td><td>macOS 11 o successivo, Apple Silicon (arm64). Formati: AU, standalone.</td></tr>
+  <tr><td>Windows</td><td>Windows 10/11 a 64 bit. Formati: VST3, standalone.</td></tr>
+  <tr><td>Host</td><td>Qualsiasi DAW che carichi AU (macOS) o VST3 (Windows).</td></tr>
+</table>
+
+<h3>macOS</h3>
+<ol>
+  <li>Salva il progetto e chiudi la DAW.</li>
+  <li>Apri <code>Aester-EQ-DropDownAcademy-1.3.0-macOS-arm64.dmg</code>.</li>
+  <li>Esegui <code>Aester-EQ-DropDownAcademy-Installer.pkg</code> e completa l'installazione (richiede la password di amministratore).</li>
+  <li>Il pacchetto installa <code>Aester EQ.component</code> in <code>/Library/Audio/Plug-Ins/Components</code> e <code>Aester EQ.app</code> in <code>/Applications</code>.</li>
+  <li>Riavvia la DAW e cerca <strong>DropDownAcademy → Aester EQ</strong>.</li>
+</ol>
+<div class="note">Il pacchetto è firmato ad hoc e non notarizzato. Se al primo avvio dello standalone macOS blocca l'apertura, fai clic destro sull'app, scegli <strong>Apri</strong> e conferma. Non viene installato alcun driver, estensione di sistema o servizio in background.</div>
+
+<h3>Windows</h3>
+<ol>
+  <li>Salva il progetto e chiudi la DAW.</li>
+  <li>Esegui <code>Aester-EQ-DropDownAcademy-1.3.0-Windows-x64.exe</code> e accetta la richiesta di privilegi di amministratore.</li>
+  <li>Il VST3 viene installato in <code>C:\Program Files\Common Files\VST3\Aester EQ.vst3</code>, lo standalone in <code>C:\Program Files\DropDownAcademy\Aester EQ</code>.</li>
+  <li>Riavvia la DAW e fai riscansionare i plugin.</li>
+</ol>
+<div class="note">L'installer non è firmato: SmartScreen può chiedere una conferma. Se l'host segnala DLL mancanti, installa il <em>Microsoft Visual C++ 2015-2022 Redistributable (x64)</em> dal sito Microsoft, non singoli file DLL da siti terzi.</div>
+
+<h3>Aggiornamento dalla 1.2.0</h3>
+<p>La 1.3.0 usa un nuovo identificativo del prodotto (bundle identifier e codice produttore). La versione precedente non viene sovrascritta: rimuovi la vecchia <code>Aester EQ.component</code> (o <code>Aester EQ.vst3</code>) e la vecchia applicazione, poi reinstalla e riscansiona. I parametri e gli stati salvati con la 1.2.0 vengono letti correttamente, ma alcuni host potrebbero segnalare l'istanza precedente come mancante, perché l'identità del plugin è cambiata.</p>
+
+<h3>Disinstallazione</h3>
+<ul>
+  <li><strong>macOS:</strong> elimina <code>Aester EQ.component</code> da <code>/Library/Audio/Plug-Ins/Components</code> e <code>Aester EQ.app</code> da <code>/Applications</code>.</li>
+  <li><strong>Windows:</strong> usa <em>App e funzionalità</em>; il disinstallatore rimuove VST3, standalone e collegamenti.</li>
+</ul>
+<p>I preset utente e i file di sessione non vengono cancellati.</p>
+
+<h2 id="c3">3. Primo avvio</h2>
+<p>Una nuova istanza si apre <strong>senza bande attive</strong>. Nel grafico compare la scritta <em>Double-click the graph to add a band</em>: fai doppio clic in un punto qualsiasi per creare la banda 1, oppure premi <strong>+ Add band</strong>.</p>
+<p>La finestra parte a 1000 × 700 punti. Puoi ridimensionarla trascinando l'angolo in basso a destra oppure usando il menu <strong>Size</strong>. La dimensione scelta viene ricordata dall'istanza finché resta caricata.</p>
+<img class="shot" src="../assets/aester-focus-dda.png" alt="Interfaccia di Aester EQ">
+<p class="cap">Finestra principale: grafico della risposta, pannello flottante della banda selezionata, footer con i controlli globali.</p>
+
+<h2 id="c4">4. L'interfaccia</h2>
+<table>
+  <tr><th>Area</th><th>Cosa contiene</th></tr>
+  <tr><td class="k">Barra superiore</td><td>Nome del prodotto, Undo/Redo, menu dei preset, A/B, Copy, Help, Size.</td></tr>
+  <tr><td class="k">Grafico</td><td>Risposta in frequenza <em>wet</em> prima del Mix, nodi delle bande, analizzatore. In alto a sinistra l'etichetta <em>WET RESPONSE / FREQUENCY</em>.</td></tr>
+  <tr><td class="k">Meter L / R</td><td>A destra del grafico, picco per canale.</td></tr>
+  <tr><td class="k">Pannello flottante</td><td>Compare quando selezioni una banda: FREQ, GAIN, Q, SOLO, forma, pendenza, posizione stereo, modalità. Rimane fermo durante la rotazione di un controllo e segue la frequenza quando lo rilasci.</td></tr>
+  <tr><td class="k">Striscia bande</td><td>Card numerate (01–24) su quattro pagine da sei. Ogni card ha interruttore di attivazione e i campi numerici di frequenza, guadagno e Q.</td></tr>
+  <tr><td class="k">Footer</td><td>Modalità di processing, analizzatore, Freeze, intervallo in dB, selettore L/R–Mid/Side, INV ALL e le manopole BALANCE, MIX, OUTPUT.</td></tr>
+</table>
+
+<h2 id="c5">5. Le bande</h2>
+<h3>Creare, selezionare, modificare</h3>
+<ul>
+  <li><strong>Doppio clic</strong> sul grafico: crea una banda nel punto indicato.</li>
+  <li><strong>Clic singolo</strong> su un nodo: seleziona la banda e apre il pannello flottante.</li>
+  <li><strong>Trascinamento</strong> del nodo: imposta frequenza e guadagno.</li>
+  <li><strong>Rotella</strong> sul grafico: cambia il Q della banda selezionata.</li>
+  <li><strong>Doppio clic</strong> su una manopola del pannello: riporta quel parametro al valore predefinito.</li>
+  <li><strong>Clic destro</strong> su un nodo: azioni della banda.</li>
+  <li><strong>Del</strong>: disattiva lo slot selezionato.</li>
+</ul>
+<p>I campi numerici delle card permettono di inserire un valore esatto. Il pannello flottante ha gli stessi tre controlli in forma di manopola, con la frequenza e il guadagno mostrati anche accanto al nodo.</p>
+
+<h3>Forme disponibili</h3>
+<table>
+  <tr><th>Forma</th><th>Uso tipico</th></tr>
+  <tr><td class="k">Bell</td><td>Campanello simmetrico: la forma più usata per correzioni tonali.</td></tr>
+  <tr><td class="k">Low Shelf</td><td>Guadagno costante sotto la frequenza scelta.</td></tr>
+  <tr><td class="k">Low Cut</td><td>Taglio passa-alto con pendenza selezionabile.</td></tr>
+  <tr><td class="k">High Shelf</td><td>Guadagno costante sopra la frequenza scelta.</td></tr>
+  <tr><td class="k">High Cut</td><td>Taglio passa-basso con pendenza selezionabile.</td></tr>
+  <tr><td class="k">Notch</td><td>Taglio stretto su una frequenza precisa.</td></tr>
+  <tr><td class="k">Band Pass</td><td>Lascia passare solo la regione attorno alla frequenza.</td></tr>
+  <tr><td class="k">Tilt Shelf</td><td>Bilanciamento progressivo tra basse e alte.</td></tr>
+  <tr><td class="k">Flat Tilt</td><td>Inclinazione lineare della risposta.</td></tr>
+  <tr><td class="k">All Pass</td><td>Modifica la fase senza variare il modulo.</td></tr>
+</table>
+
+<h3>Pendenza dei tagli</h3>
+<p>Solo per Low Cut e High Cut il menu della pendenza è attivo: 6, 12, 24, 36, 48, 72 o 96 dB/ottava. Sulle altre forme il controllo è disabilitato.</p>
+
+<h3>24 bande su quattro pagine</h3>
+<p>Le card sono organizzate in quattro pagine da sei. Le frecce accanto all'indicatore di pagina cambiano pagina; il contatore in basso a sinistra riporta quante bande sono attive sul totale (per esempio <em>3 / 24 BANDS</em>).</p>
+
+<h2 id="c6">6. Static, Dynamic, Spectral</h2>
+<h3>Static</h3>
+<p>Il guadagno della banda è fisso: è l'equalizzazione classica. In modalità Live, Static non introduce latenza aggiuntiva.</p>
+
+<h3>Dynamic</h3>
+<p>Il guadagno del filtro viene mosso dal livello del segnale. Il pannello espanso mostra:</p>
+<table>
+  <tr><td class="k">THRESHOLD</td><td>Soglia di intervento. Il valore corrente del detector è mostrato accanto.</td></tr>
+  <tr><td class="k">RANGE</td><td>Quanto il guadagno si muove: negativo riduce il livello quando la soglia è superata, positivo lo espande.</td></tr>
+  <tr><td class="k">ATTACK</td><td>Velocità con cui il guadagno raggiunge il valore di intervento.</td></tr>
+  <tr><td class="k">RELEASE</td><td>Velocità con cui torna indietro.</td></tr>
+  <tr><td class="k">Trigger Band / Free</td><td><strong>Band</strong>: il detector segue la regione di frequenza della banda. <strong>Free</strong>: consente tagli separati di rilevamento bassi e alti.</td></tr>
+  <tr><td class="k">External key</td><td>Ogni banda ha un interruttore: perché funzioni, la DAW deve anche instradare una sorgente di sidechain. Una chiave esterna assente o silenziosa non viene trattata come ingresso principale.</td></tr>
+</table>
+
+<h3>Spectral</h3>
+<p>L'analisi avviene per frequenza: il guadagno viene applicato a regioni dello spettro a breve termine. Aggiunge latenza rispetto al percorso Live (vedi capitolo 8) e va usata quando serve un intervento selettivo che i filtri IIR non permettono.</p>
+<div class="note">Alla 1.3.0 non sono implementati: l'audizione del detector, la soglia automatica e un detector Free separato per la modalità Spectral.</div>
+
+<h2 id="c7">7. Posizione stereo</h2>
+<p>Ogni banda sceglie dove agire:</p>
+<table>
+  <tr><td class="k">Stereo</td><td>Applica la banda a entrambi i canali.</td></tr>
+  <tr><td class="k">Left / Right</td><td>Agisce su un solo canale.</td></tr>
+  <tr><td class="k">Mid / Side</td><td>Agisce sulla componente somma (Mid) o differenza (Side).</td></tr>
+</table>
+<p>In un segnale mono, il processing che riguarda solo Right o Side non ha effetto. La collocazione stereo di una banda viene rispettata anche dal Solo.</p>
+
+<h2 id="c8">8. Motore, fase e latenza</h2>
+<p>Il pulsante di fase nel footer sceglie il percorso di processing:</p>
+<table>
+  <tr><th>Modalità</th><th>Comportamento</th><th>Latenza aggiunta</th></tr>
+  <tr><td class="k">Live</td><td>Filtri IIR. In Static e Dynamic non aggiunge ritardo.</td><td>0 campioni</td></tr>
+  <tr><td class="k">Analog FIR</td><td>Campiona la risposta complessa dei filtri a una frequenza di progetto elevata.</td><td>320 campioni</td></tr>
+  <tr><td class="k">Linear FIR</td><td>Mantiene il modulo con un kernel simmetrico; cinque risoluzioni (Low, Medium, High, Very High, Maximum).</td><td>Cresce con la risoluzione</td></tr>
+  <tr><td class="k">Spectral</td><td>Analisi e sintesi a breve termine.</td><td>1024 campioni in più rispetto al percorso scelto</td></tr>
+</table>
+<p>Le risoluzioni FIR più alte migliorano la definizione alle basse frequenze, ma aumentano latenza e pre-ringing. Il valore di latenza riportato nel footer è quello dichiarato all'host e usato per allineare il dry nel Mix.</p>
+
+<h2 id="c9">9. Mix</h2>
+<p><strong>Mix</strong> è una miscela lineare tra segnale dry e segnale processato, allineata in latenza: al 100% senti solo il wet, allo 0% solo il dry. La variazione è smussata su 20 ms.</p>
+<p>Due punti importanti:</p>
+<ul>
+  <li>Il grafico mostra la <strong>risposta wet prima del Mix</strong>: non disegna le cancellazioni dipendenti dalla fase che possono nascere dalla somma dry/wet.</li>
+  <li>Un Mix al 50% <strong>non</strong> equivale a dimezzare il guadagno in dB di ogni banda, perché le risposte complesse dei filtri si sommano.</li>
+</ul>
+
+<h2 id="c10">10. Solo</h2>
+<p><strong>SOLO</strong> isola temporaneamente la regione di frequenza della banda selezionata, prelevandola dall'uscita già processata (non bypassa le altre bande). La larghezza dell'audizione segue il Q della banda: campanelli, notch, band pass, tilt e all pass usano un monitor passa-banda centrato sull'unità; Low Shelf e High Cut fanno ascoltare la regione bassa, High Shelf e Low Cut quella alta.</p>
+<ul>
+  <li>Rispetta la collocazione stereo della banda.</li>
+  <li>Segue la latenza di processing e usa una dissolvenza di 20 ms.</li>
+  <li>Cambiando banda selezionata, il monitor sfuma prima di passare alla nuova.</li>
+  <li>È temporaneo: non è automatizzabile, non viene salvato nei preset e termina alla chiusura dell'editor o quando la banda viene disattivata.</li>
+</ul>
+<p>Durante il Solo, nel grafico solo la banda in audizione resta evidenziata in giallo; le altre e la risposta complessiva vengono attenuate.</p>
+
+<h2 id="c11">11. Analizzatore e Freeze</h2>
+<p>Il pulsante <strong>Analyzer</strong> sceglie cosa mostrare: Off, Pre (prima del processing), Post (dopo), Pre+Post. Il menu contestuale aggiunge:</p>
+<ul>
+  <li><strong>Display tilt</strong>: 0, 3, 4.5 o 6 dB/ottava, per leggere più facilmente lo spettro.</li>
+  <li><strong>Side Chain spectrum</strong>: mostra anche lo spettro della chiave esterna.</li>
+</ul>
+<p><strong>Freeze</strong> blocca l'aggiornamento dello spettro: audio, riduzione di guadagno e meter continuano a funzionare. <strong>Resume</strong> riavvia il disegno. Lo stato di Freeze è locale all'editor e non è un parametro salvato nello stato del plugin.</p>
+<p>Il pulsante accanto (12 dB / 30 dB / 6 dB) cambia l'intervallo verticale del grafico. I meter di uscita usano ritenzione di picco con decadimento nel tempo.</p>
+
+<h2 id="c12">12. Uscita, bilanciamento e Mid/Side</h2>
+<h3>Manopole del footer</h3>
+<table>
+  <tr><td class="k">OUTPUT</td><td>Guadagno di uscita sul percorso wet. Doppio clic riporta a 0 dB.</td></tr>
+  <tr><td class="k">MIX</td><td>Miscela dry/wet (capitolo 9). Doppio clic riporta a 100%.</td></tr>
+  <tr><td class="k">BALANCE</td><td>Bilanciamento post-Mix. Mostra percentuali L/R oppure M/S con <em>C</em> al centro. Doppio clic riporta al centro.</td></tr>
+</table>
+<p>Poiché Balance e polarità sono <strong>dopo</strong> il Mix, restano attivi anche a Mix 0%. Il bypass del plugin ripristina il segnale non bilanciato e non invertito.</p>
+
+<h3>Mid / Side output</h3>
+<p>Selezionando <strong>Mid / Side</strong> dal menu della modalità stereo, si apre il pannello <em>MID / SIDE OUTPUT</em> con:</p>
+<ul>
+  <li>guadagno indipendente di <strong>MID</strong> e <strong>SIDE</strong>;</li>
+  <li>interruttori di polarità <strong>INV MID</strong> e <strong>INV SIDE</strong>;</li>
+  <li><strong>INV ALL</strong>, che inverte il segnale stereo finale.</li>
+</ul>
+<p>La manopola di bilanciamento centrale favorisce il Mid verso sinistra e il Side verso destra. Questi controlli agiscono dopo il Mix, richiedono un segnale stereo, vengono salvati nei preset e sono rilasciati dal bypass. In modalità L/R il pannello è nascosto.</p>
+<div class="note">Il controllo di uscita non è un limiter: non protegge da picchi introdotti dall'equalizzazione.</div>
+
+<h2 id="c13">13. Preset, Undo/Redo, A/B</h2>
+<table>
+  <tr><td class="k">Menu preset</td><td>Salva e carica lo stato, ripristina i parametri predefiniti, attiva il bypass.</td></tr>
+  <tr><td class="k">Undo / Redo</td><td>Frecce nella barra superiore. Coprono le modifiche dell'editor aperto.</td></tr>
+  <tr><td class="k">A* / B</td><td>Due stati di confronto locali all'editor. L'asterisco indica il lato attivo.</td></tr>
+  <tr><td class="k">Copy</td><td>Copia lo stato corrente negli appunti del plugin.</td></tr>
+  <tr><td class="k">Size</td><td>Dimensioni predefinite della finestra.</td></tr>
+</table>
+<p>La cronologia Undo/Redo e l'A/B sono locali all'editor: sono cose diverse dalla persistenza dei preset e dello stato nella sessione.</p>
+
+<h2 id="c14">14. Esempi pratici</h2>
+<h3>Voce: pulire senza svuotare</h3>
+<ol>
+  <li>Low Cut a 70–90 Hz, pendenza 24 dB/ottava.</li>
+  <li>Campanello stretto (Q 3–6) in attenuazione sulla risonanza più fastidiosa.</li>
+  <li>High Shelf leggero per l'aria, se serve.</li>
+  <li>Una banda Dynamic in attenuazione sulla zona che "punge" quando si alza il volume, range negativo moderato.</li>
+</ol>
+
+<h3>Bus batteria: controllo dei transienti</h3>
+<ol>
+  <li>Campanello in boost sul corpo (60–120 Hz) con Q basso.</li>
+  <li>Banda Dynamic in attenuazione sul medio-alto per domare i colpi forti.</li>
+  <li>Controlla il meter L/R e usa Output per riportare il livello di partenza.</li>
+</ol>
+
+<h3>Master: correzioni chirurgiche</h3>
+<ol>
+  <li>Lavora con poche bande e guadagni piccoli.</li>
+  <li>Se usi Linear FIR per la fase lineare, tieni conto della latenza nel confronto con il dry e usa Mix con cautela.</li>
+  <li>Verifica sempre con il bypass: la correzione deve restare un miglioramento.</li>
+</ol>
+
+<h2 id="c15">15. Cosa il plugin non fa</h2>
+<ul>
+  <li>Non è un limiter e non normalizza il livello.</li>
+  <li>Non dichiara trasparenza percettiva: è un equalizzatore, con fase e pre-ringing propri delle modalità scelte.</li>
+  <li>Non include AAX in questi pacchetti.</li>
+  <li>Non automatizza il Solo e non lo salva nei preset.</li>
+  <li>Non gestisce da solo la chiave esterna: serve l'instradamento della DAW.</li>
+</ul>
+
+<h2 id="c16">16. Risoluzione dei problemi</h2>
+<table>
+  <tr><th>Sintomo</th><th>Cosa fare</th></tr>
+  <tr><td>Il plugin non compare nella DAW</td><td>Riavvia la DAW dopo l'installazione e forza una nuova scansione dei plugin. Su macOS verifica che <code>Aester EQ.component</code> sia in <code>/Library/Audio/Plug-Ins/Components</code>.</td></tr>
+  <tr><td>macOS blocca lo standalone</td><td>Clic destro sull'app → <strong>Apri</strong>. Il pacchetto non è notarizzato.</td></tr>
+  <tr><td>Windows segnala il file come non sicuro</td><td>Conferma in SmartScreen: l'installer non è firmato con un certificato commerciale.</td></tr>
+  <tr><td>Errore di DLL mancanti su Windows</td><td>Installa il Microsoft Visual C++ 2015-2022 Redistributable x64 ufficiale.</td></tr>
+  <tr><td>La sessione non trova il plugin dopo l'aggiornamento</td><td>La 1.3.0 ha una nuova identità: reinstalla la 1.2.0 per riaprire la sessione, oppure ricarica il plugin e ripristina i parametri.</td></tr>
+  <tr><td>Latenza percepita alta</td><td>Controlla il percorso di fase nel footer: Live è a zero ritardo, Analog FIR 320 campioni, Spectral +1024.</td></tr>
+  <tr><td>Il confronto A/B non cambia</td><td>L'A/B è locale all'editor aperto e non è salvato nei preset.</td></tr>
+</table>
+
+<h2 id="c17">17. Specifiche e licenza</h2>
+<table class="kv">
+  <tr><td>Prodotto</td><td>Aester EQ 1.3.0 — DropDownAcademy</td></tr>
+  <tr><td>Bande</td><td>24, su quattro pagine da sei</td></tr>
+  <tr><td>Forme</td><td>10 (Bell, Low Shelf, Low Cut, High Shelf, High Cut, Notch, Band Pass, Tilt Shelf, Flat Tilt, All Pass)</td></tr>
+  <tr><td>Modalità</td><td>Static, Dynamic, Spectral</td></tr>
+  <tr><td>Posizioni stereo</td><td>Stereo, Left, Right, Mid, Side</td></tr>
+  <tr><td>Percorsi</td><td>Live IIR, Analog FIR, Linear FIR (5 risoluzioni), Spectral</td></tr>
+  <tr><td>Formati</td><td>AU + standalone (macOS arm64), VST3 + standalone (Windows x64)</td></tr>
+  <tr><td>Licenza</td><td>AGPL-3.0-only. Il codice sorgente è incluso nel pacchetto macOS.</td></tr>
+</table>
+<p>Il prodotto è distribuito da DropDownAcademy. Le note sulle librerie di terze parti sono in <code>THIRD_PARTY_NOTICES.md</code>.</p>
+
+<footer>Aester EQ 1.3.0 — Manuale d'uso — DropDownAcademy · www.dropdownacademy.com</footer>
+</body>
+</html>

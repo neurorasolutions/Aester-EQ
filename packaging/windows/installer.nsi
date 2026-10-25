@@ -1,13 +1,13 @@
 Unicode true
 !include "MUI2.nsh"
 !include "x64.nsh"
-Name "Aester EQ by Neurora"
+Name "Aester EQ by DropDownAcademy"
 OutFile "${OUTPUT}"
-InstallDir "$PROGRAMFILES64\Neurora\Aester EQ"
+InstallDir "$PROGRAMFILES64\DropDownAcademy\Aester EQ"
 RequestExecutionLevel admin
 !define MUI_ABORTWARNING
-!define MUI_WELCOMEPAGE_TITLE "Aester EQ by Neurora"
-!define MUI_WELCOMEPAGE_TEXT "Free educational equalizer by Neurora.$\r$\n$\r$\nPrecision static, dynamic and spectral equalization with paged band cards, latency-aligned Mix and analyzer Freeze.$\r$\n$\r$\nhttps://www.neurora.it$\r$\n$\r$\nClose your audio applications before installing."
+!define MUI_WELCOMEPAGE_TITLE "Aester EQ by DropDownAcademy"
+!define MUI_WELCOMEPAGE_TEXT "Free educational equalizer by DropDownAcademy.$\r$\n$\r$\nPrecision static, dynamic and spectral equalization with paged band cards, latency-aligned Mix and analyzer Freeze.$\r$\n$\r$\nhttps://www.dropdownacademy.com$\r$\n$\r$\nClose your audio applications before installing."
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "${SOURCE}\LICENSE"
 !insertmacro MUI_PAGE_DIRECTORY
@@ -33,14 +33,17 @@ Section "Aester EQ"
   SetOutPath "$INSTDIR\docs"
   File "${SOURCE}\docs\USER_GUIDE.md"
   File "${SOURCE}\docs\PROVENANCE.md"
-  SetOutPath "$INSTDIR"
+  File /nonfatal "${SOURCE}\MANUALS\*.pdf"
   WriteUninstaller "$INSTDIR\Uninstall.exe"
-  CreateDirectory "$SMPROGRAMS\Neurora"
-  CreateShortcut "$SMPROGRAMS\Neurora\Aester EQ.lnk" "$INSTDIR\Aester EQ.exe"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\NeuroraAesterEQ" "DisplayName" "Aester EQ by Neurora"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\NeuroraAesterEQ" "UninstallString" '$"$INSTDIR\Uninstall.exe$"'
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\NeuroraAesterEQ" "Publisher" "Neurora"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\NeuroraAesterEQ" "URLInfoAbout" "https://www.neurora.it"
+  CreateDirectory "$SMPROGRAMS\DropDownAcademy"
+  CreateShortcut "$SMPROGRAMS\DropDownAcademy\Aester EQ.lnk" "$INSTDIR\Aester EQ.exe"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\DropDownAcademyAesterEQ" "DisplayName" "Aester EQ by DropDownAcademy"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\DropDownAcademyAesterEQ" "DisplayVersion" "${VERSION}"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\DropDownAcademyAesterEQ" "UninstallString" '"$INSTDIR\Uninstall.exe"'
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\DropDownAcademyAesterEQ" "Publisher" "DropDownAcademy"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\DropDownAcademyAesterEQ" "URLInfoAbout" "https://www.dropdownacademy.com"
+  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\DropDownAcademyAesterEQ" "NoModify" 1
+  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\DropDownAcademyAesterEQ" "NoRepair" 1
 SectionEnd
 Section "Uninstall"
   SetRegView 64
@@ -55,10 +58,11 @@ Section "Uninstall"
   Delete "$INSTDIR\THIRD_PARTY_NOTICES.md"
   Delete "$INSTDIR\docs\USER_GUIDE.md"
   Delete "$INSTDIR\docs\PROVENANCE.md"
+  Delete "$INSTDIR\docs\*.pdf"
   RMDir "$INSTDIR\docs"
   Delete "$INSTDIR\Uninstall.exe"
   RMDir "$INSTDIR"
-  Delete "$SMPROGRAMS\Neurora\Aester EQ.lnk"
-  RMDir "$SMPROGRAMS\Neurora"
-  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\NeuroraAesterEQ"
+  Delete "$SMPROGRAMS\DropDownAcademy\Aester EQ.lnk"
+  RMDir "$SMPROGRAMS\DropDownAcademy"
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\DropDownAcademyAesterEQ"
 SectionEnd

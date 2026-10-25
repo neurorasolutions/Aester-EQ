@@ -1,5 +1,14 @@
 # Changelog
 
+## Aester EQ 1.3.0 — DropDownAcademy edition
+
+- New product identity: DropDownAcademy as manufacturer, `com.dropdownacademy.aestereq` bundle identifier, `DdAc` manufacturer code.
+- Editor header and in-app help now carry the DropDownAcademy name and website.
+- Rebuilt macOS installer: DropDownAcademy welcome and read-me pages, new text logo, refreshed distribution title.
+- Rebuilt Windows installer: new install path, Start menu group, publisher and uninstall registry entries.
+- Added Italian and English user manuals, included in both installers and in the macOS disk image.
+- Processing, parameters and state schema are unchanged from 1.2.0. Presets created with 1.2.0 load unchanged.
+
 ## Aester EQ 1.2.0 — macOS preview
 
 - Compact resizable Focus UI with a floating selected-band panel and fluorescent yellow highlights.

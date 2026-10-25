@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Aester EQ — User Manual</title>
+<style>
+  :root{
+    --ink:#1b2422; --muted:#5c6b68; --line:#dfe4e2; --accent:#c8a800;
+    --panel:#f6f7f6; --dark:#1a2024;
+  }
+  @page{ size:A4; margin:20mm 18mm 18mm 18mm; }
+  *{box-sizing:border-box}
+  body{margin:0; font:11pt/1.55 -apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif; color:var(--ink)}
+  h1,h2,h3{line-height:1.2; margin:0}
+  h2{font-size:19pt; margin:26pt 0 8pt; padding-bottom:5pt; border-bottom:1.5pt solid var(--ink); page-break-after:avoid}
+  h3{font-size:12.5pt; margin:16pt 0 4pt; page-break-after:avoid}
+  p{margin:0 0 7pt}
+  ul,ol{margin:0 0 8pt; padding-left:15pt}
+  li{margin:0 0 3pt}
+  table{width:100%; border-collapse:collapse; margin:6pt 0 10pt; font-size:9.5pt; page-break-inside:avoid}
+  th,td{border-bottom:.6pt solid var(--line); padding:5pt 6pt; text-align:left; vertical-align:top}
+  th{background:var(--panel); font-weight:600}
+  td.k{width:32%; font-weight:600}
+  code{font:9.5pt "SF Mono",Menlo,monospace; background:var(--panel); padding:1pt 3pt; border-radius:2pt}
+  .cover{height:247mm; display:flex; flex-direction:column; justify-content:space-between; page-break-after:always}
+  .cover .logo{width:78mm; margin-top:8mm}
+  .cover h1{font-size:44pt; letter-spacing:-.5pt; margin:0 0 2mm}
+  .cover .sub{font-size:16pt; color:var(--muted); margin:0}
+  .cover .meta{font-size:10pt; color:var(--muted); line-height:1.8}
+  .cover .rule{height:3mm; background:var(--accent); width:38mm; margin:6mm 0}
+  .note{background:var(--panel); border-left:3pt solid var(--accent); padding:8pt 10pt; margin:8pt 0; font-size:10pt}
+  .toc{font-size:10.5pt; columns:2; column-gap:12mm}
+  .toc a{color:var(--ink); text-decoration:none}
+  .shot{width:100%; border-radius:3pt; margin:8pt 0 4pt}
+  .cap{font-size:8.5pt; color:var(--muted); margin:0 0 12pt}
+  .kv td:first-child{font-weight:600; width:34%}
+  footer{margin-top:24pt; padding-top:6pt; border-top:.6pt solid var(--line); font-size:8.5pt; color:var(--muted)}
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div>
+    <img class="logo" src="../assets/dropdownacademy-logo.png" alt="DropDownAcademy">
+    <div class="rule"></div>
+    <h1>Aester EQ</h1>
+    <p class="sub">User manual</p>
+  </div>
+  <div>
+    <p class="meta">
+      Version 1.3.0 — DropDownAcademy edition<br>
+      24-band equalizer with static, dynamic and spectral processing<br>
+      macOS Apple Silicon · Windows x64<br><br>
+      www.dropdownacademy.com
+    </p>
+  </div>
+</section>
+
+<h2>Contents</h2>
+<nav class="toc">
+  <p><a href="#c1">1. What Aester EQ is</a><br>
+  <a href="#c2">2. Requirements and installation</a><br>
+  <a href="#c3">3. First launch</a><br>
+  <a href="#c4">4. The interface</a><br>
+  <a href="#c5">5. Bands</a><br>
+  <a href="#c6">6. Static, Dynamic, Spectral</a><br>
+  <a href="#c7">7. Stereo placement</a><br>
+  <a href="#c8">8. Engine, phase and latency</a><br>
+  <a href="#c9">9. Mix</a><br>
+  <a href="#c10">10. Solo</a><br>
+  <a href="#c11">11. Analyzer and Freeze</a><br>
+  <a href="#c12">12. Output, balance and Mid/Side</a><br>
+  <a href="#c13">13. Presets, Undo/Redo, A/B</a><br>
+  <a href="#c14">14. Practical examples</a><br>
+  <a href="#c15">15. What the plugin does not do</a><br>
+  <a href="#c16">16. Troubleshooting</a><br>
+  <a href="#c17">17. Specifications and license</a></p>
+</nav>
+
+<h2 id="c1">1. What Aester EQ is</h2>
+<p>Aester EQ is a 24-band equalizer built for targeted work: few bands, precise control, and a per-band choice between fixed gain (Static), level-driven gain (Dynamic) and frequency-selective processing (Spectral).</p>
+<p>The static path uses linear filters: gain and bandwidth determine the tonal change, with no intentional saturation stage. Dynamic mode reads a level detector and moves filter gain; Spectral mode works on a short-time transform to act on frequency regions.</p>
+<p>The plugin ships as Audio Unit and standalone on macOS, and as VST3 and standalone on Windows.</p>
+
+<h2 id="c2">2. Requirements and installation</h2>
+<h3>Requirements</h3>
+<table class="kv">
+  <tr><td>macOS</td><td>macOS 11 or later, Apple Silicon (arm64). Formats: AU, standalone.</td></tr>
+  <tr><td>Windows</td><td>Windows 10/11 64-bit. Formats: VST3, standalone.</td></tr>
+  <tr><td>Host</td><td>Any DAW that loads AU (macOS) or VST3 (Windows).</td></tr>
+</table>
+
+<h3>macOS</h3>
+<ol>
+  <li>Save your project and close the DAW.</li>
+  <li>Open <code>Aester-EQ-DropDownAcademy-1.3.0-macOS-arm64.dmg</code>.</li>
+  <li>Run <code>Aester-EQ-DropDownAcademy-Installer.pkg</code> and complete the installation (administrator password required).</li>
+  <li>The package installs <code>Aester EQ.component</code> in <code>/Library/Audio/Plug-Ins/Components</code> and <code>Aester EQ.app</code> in <code>/Applications</code>.</li>
+  <li>Restart the DAW and look for <strong>DropDownAcademy → Aester EQ</strong>.</li>
+</ol>
+<div class="note">The package is ad hoc signed and not notarized. If macOS blocks the first launch of the standalone, right-click the app, choose <strong>Open</strong> and confirm. No driver, system extension or background service is installed.</div>
+
+<h3>Windows</h3>
+<ol>
+  <li>Save your project and close the DAW.</li>
+  <li>Run <code>Aester-EQ-DropDownAcademy-1.3.0-Windows-x64.exe</code> and allow the administrator prompt.</li>
+  <li>The VST3 is installed in <code>C:\Program Files\Common Files\VST3\Aester EQ.vst3</code>; the standalone in <code>C:\Program Files\DropDownAcademy\Aester EQ</code>.</li>
+  <li>Restart the DAW and rescan plug-ins.</li>
+</ol>
+<div class="note">The installer is unsigned, so SmartScreen may ask for confirmation. If the host reports missing DLLs, install the official <em>Microsoft Visual C++ 2015-2022 Redistributable (x64)</em> from Microsoft, never individual DLL files from third-party sites.</div>
+
+<h3>Updating from 1.2.0</h3>
+<p>Version 1.3.0 uses a new product identity (bundle identifier and manufacturer code). The previous version is not overwritten: remove the old <code>Aester EQ.component</code> (or <code>Aester EQ.vst3</code>) and the old application, then install again and rescan. Parameters and states saved with 1.2.0 load correctly, but some hosts may report the previous instance as missing because the plug-in identity changed.</p>
+
+<h3>Uninstalling</h3>
+<ul>
+  <li><strong>macOS:</strong> delete <code>Aester EQ.component</code> from <code>/Library/Audio/Plug-Ins/Components</code> and <code>Aester EQ.app</code> from <code>/Applications</code>.</li>
+  <li><strong>Windows:</strong> use <em>Apps and features</em>; the uninstaller removes the VST3, the standalone and the shortcuts.</li>
+</ul>
+<p>User presets and session files are not deleted.</p>
+
+<h2 id="c3">3. First launch</h2>
+<p>A new instance opens <strong>without active bands</strong>. The graph shows <em>Double-click the graph to add a band</em>: double-click anywhere to create band 1, or press <strong>+ Add band</strong>.</p>
+<p>The window starts at 1000 × 700 points. Resize it by dragging the lower-right corner or use the <strong>Size</strong> menu. The chosen size is remembered by the instance while it stays loaded.</p>
+<img class="shot" src="../assets/aester-focus-dda.png" alt="Aester EQ interface">
+<p class="cap">Main window: response graph, floating panel for the selected band, footer with global controls.</p>
+
+<h2 id="c4">4. The interface</h2>
+<table>
+  <tr><th>Area</th><th>What it contains</th></tr>
+  <tr><td class="k">Top bar</td><td>Product name, Undo/Redo, preset menu, A/B, Copy, Help, Size.</td></tr>
+  <tr><td class="k">Graph</td><td><em>Wet</em> frequency response before Mix, band nodes, analyzer. Labelled <em>WET RESPONSE / FREQUENCY</em>.</td></tr>
+  <tr><td class="k">L / R meters</td><td>Right of the graph, per-channel peak.</td></tr>
+  <tr><td class="k">Floating panel</td><td>Appears when a band is selected: FREQ, GAIN, Q, SOLO, shape, slope, stereo placement, mode. It stays still while a knob is turned and follows frequency when released.</td></tr>
+  <tr><td class="k">Band strip</td><td>Numbered cards (01–24) over four pages of six. Each card has an enable switch and numeric fields for frequency, gain and Q.</td></tr>
+  <tr><td class="k">Footer</td><td>Processing path, analyzer, Freeze, dB range, L/R–Mid/Side selector, INV ALL and the BALANCE, MIX, OUTPUT rotaries.</td></tr>
+</table>
+
+<h2 id="c5">5. Bands</h2>
+<h3>Create, select, edit</h3>
+<ul>
+  <li><strong>Double-click</strong> the graph: creates a band at that point.</li>
+  <li><strong>Single click</strong> a node: selects the band and opens the floating panel.</li>
+  <li><strong>Drag</strong> a node: sets frequency and gain.</li>
+  <li><strong>Scroll</strong> on the graph: changes the selected band's Q.</li>
+  <li><strong>Double-click</strong> a knob in the panel: resets that parameter to its default.</li>
+  <li><strong>Right-click</strong> a node: band actions.</li>
+  <li><strong>Del</strong>: disables the selected slot.</li>
+</ul>
+<p>Numeric fields on the cards allow exact values. The floating panel offers the same three controls as knobs, with frequency and gain also shown next to the node.</p>
+
+<h3>Available shapes</h3>
+<table>
+  <tr><th>Shape</th><th>Typical use</th></tr>
+  <tr><td class="k">Bell</td><td>Symmetric bell: the most common tonal correction.</td></tr>
+  <tr><td class="k">Low Shelf</td><td>Constant gain below the chosen frequency.</td></tr>
+  <tr><td class="k">Low Cut</td><td>High-pass with selectable slope.</td></tr>
+  <tr><td class="k">High Shelf</td><td>Constant gain above the chosen frequency.</td></tr>
+  <tr><td class="k">High Cut</td><td>Low-pass with selectable slope.</td></tr>
+  <tr><td class="k">Notch</td><td>Narrow cut at a precise frequency.</td></tr>
+  <tr><td class="k">Band Pass</td><td>Passes only the region around the frequency.</td></tr>
+  <tr><td class="k">Tilt Shelf</td><td>Progressive balance between lows and highs.</td></tr>
+  <tr><td class="k">Flat Tilt</td><td>Linear tilt of the response.</td></tr>
+  <tr><td class="k">All Pass</td><td>Changes phase without changing magnitude.</td></tr>
+</table>
+
+<h3>Cut slopes</h3>
+<p>The slope menu is active for Low Cut and High Cut only: 6, 12, 24, 36, 48, 72 or 96 dB/octave. On the other shapes the control is disabled.</p>
+
+<h3>24 bands over four pages</h3>
+<p>Cards are grouped in four pages of six. The arrows next to the page indicator switch pages; the counter at the bottom left reports how many bands are active out of the total (for example <em>3 / 24 BANDS</em>).</p>
+
+<h2 id="c6">6. Static, Dynamic, Spectral</h2>
+<h3>Static</h3>
+<p>Band gain is fixed: classic equalization. In Live mode, Static adds no latency.</p>
+
+<h3>Dynamic</h3>
+<p>Filter gain is driven by signal level. The expanded panel shows:</p>
+<table>
+  <tr><td class="k">THRESHOLD</td><td>Trigger level. The current detector value is displayed next to it.</td></tr>
+  <tr><td class="k">RANGE</td><td>How far gain moves: negative reduces level when the threshold is exceeded, positive expands it.</td></tr>
+  <tr><td class="k">ATTACK</td><td>How quickly gain reaches the triggered value.</td></tr>
+  <tr><td class="k">RELEASE</td><td>How quickly it returns.</td></tr>
+  <tr><td class="k">Trigger Band / Free</td><td><strong>Band</strong>: the detector follows the band's frequency region. <strong>Free</strong>: allows separate low and high detection cuts.</td></tr>
+  <tr><td class="k">External key</td><td>Each band has its own switch: it only works if the DAW also routes a sidechain source. A silent or missing external key is not treated as the main input.</td></tr>
+</table>
+
+<h3>Spectral</h3>
+<p>Analysis runs per frequency: gain is applied to short-time spectral regions. It adds latency compared with the Live path (see chapter 8) and is meant for selective work that IIR filters cannot do.</p>
+<div class="note">As of 1.3.0 these are not implemented: detector audition, automatic threshold and a separate Spectral Free detector.</div>
+
+<h2 id="c7">7. Stereo placement</h2>
+<table>
+  <tr><td class="k">Stereo</td><td>Applies the band to both channels.</td></tr>
+  <tr><td class="k">Left / Right</td><td>Acts on one channel only.</td></tr>
+  <tr><td class="k">Mid / Side</td><td>Acts on the sum (Mid) or difference (Side) component.</td></tr>
+</table>
+<p>On a mono signal, processing that only addresses Right or Side has no effect. A band's stereo placement is respected by Solo as well.</p>
+
+<h2 id="c8">8. Engine, phase and latency</h2>
+<table>
+  <tr><th>Mode</th><th>Behaviour</th><th>Added latency</th></tr>
+  <tr><td class="k">Live</td><td>IIR filters. No added delay in Static and Dynamic.</td><td>0 samples</td></tr>
+  <tr><td class="k">Analog FIR</td><td>Samples the complex filter response at an elevated design rate.</td><td>320 samples</td></tr>
+  <tr><td class="k">Linear FIR</td><td>Keeps magnitude with a symmetric kernel; five resolutions (Low, Medium, High, Very High, Maximum).</td><td>Increases with resolution</td></tr>
+  <tr><td class="k">Spectral</td><td>Short-time analysis and synthesis.</td><td>1024 samples on top of the chosen path</td></tr>
+</table>
+<p>Higher FIR resolutions improve low-frequency definition but increase latency and pre-ringing. The latency value in the footer is what the plugin reports to the host and uses to align the dry signal in Mix.</p>
+
+<h2 id="c9">9. Mix</h2>
+<p><strong>Mix</strong> is a linear, latency-aligned blend between dry and processed audio: 100% is wet only, 0% is dry only. Changes are smoothed over 20 ms.</p>
+<ul>
+  <li>The graph shows the <strong>wet response before Mix</strong>: it does not plot the phase-dependent cancellations that a dry/wet sum can produce.</li>
+  <li>A 50% Mix is <strong>not</strong> the same as halving every band's gain in dB, because complex filter responses sum.</li>
+</ul>
+
+<h2 id="c10">10. Solo</h2>
+<p><strong>SOLO</strong> temporarily isolates the selected band's frequency region from the already processed output (it does not bypass the other bands). Audition width follows the band's Q: bell, notch, band-pass, tilt and all-pass shapes use a unity-centre band-pass monitor; Low Shelf and High Cut audition the low region, High Shelf and Low Cut the high region.</p>
+<ul>
+  <li>Respects the band's stereo placement.</li>
+  <li>Follows processing latency and uses a 20 ms crossfade.</li>
+  <li>When the selected band changes, the monitor fades out before switching.</li>
+  <li>It is temporary: not automatable, not stored in presets, and it ends when the editor closes or the band is disabled.</li>
+</ul>
+<p>While Solo is active, only the auditioned band stays highlighted in yellow; the other bands and the combined response are dimmed.</p>
+
+<h2 id="c11">11. Analyzer and Freeze</h2>
+<p><strong>Analyzer</strong> selects Off, Pre (before processing), Post (after) or Pre+Post. Its context menu adds:</p>
+<ul>
+  <li><strong>Display tilt</strong>: 0, 3, 4.5 or 6 dB/octave, for easier spectrum reading.</li>
+  <li><strong>Side Chain spectrum</strong>: also shows the external key spectrum.</li>
+</ul>
+<p><strong>Freeze</strong> holds the spectrum display: audio, gain reduction and meters keep running. <strong>Resume</strong> restarts display updates. Freeze is editor-local and is not a stored plugin parameter.</p>
+<p>The adjacent button (12 dB / 30 dB / 6 dB) changes the vertical range. Output meters use peak retention with time-based decay.</p>
+
+<h2 id="c12">12. Output, balance and Mid/Side</h2>
+<h3>Footer rotaries</h3>
+<table>
+  <tr><td class="k">OUTPUT</td><td>Output gain on the wet path. Double-click resets to 0 dB.</td></tr>
+  <tr><td class="k">MIX</td><td>Dry/wet blend (chapter 9). Double-click resets to 100%.</td></tr>
+  <tr><td class="k">BALANCE</td><td>Post-Mix balance. Shows L/R percentages or M/S with <em>C</em> at centre. Double-click recentres.</td></tr>
+</table>
+<p>Because balance and polarity sit <strong>after</strong> Mix, they stay active even at 0% Mix. Plugin bypass restores the unbalanced, non-inverted signal.</p>
+
+<h3>Mid / Side output</h3>
+<p>Selecting <strong>Mid / Side</strong> from the stereo mode menu opens the <em>MID / SIDE OUTPUT</em> panel with:</p>
+<ul>
+  <li>independent <strong>MID</strong> and <strong>SIDE</strong> gain;</li>
+  <li><strong>INV MID</strong> and <strong>INV SIDE</strong> polarity switches;</li>
+  <li><strong>INV ALL</strong>, which inverts the final stereo signal.</li>
+</ul>
+<p>The centre balance knob favours Mid to the left and Side to the right. These controls act after Mix, require a stereo signal, are stored in presets and are released by bypass. In L/R mode the panel is hidden.</p>
+<div class="note">The output control is not a limiter: it does not protect against peaks introduced by equalization.</div>
+
+<h2 id="c13">13. Presets, Undo/Redo, A/B</h2>
+<table>
+  <tr><td class="k">Preset menu</td><td>Save and load state, reset parameters, toggle bypass.</td></tr>
+  <tr><td class="k">Undo / Redo</td><td>Arrows in the top bar. They cover changes made in the open editor.</td></tr>
+  <tr><td class="k">A* / B</td><td>Two comparison states local to the editor. The asterisk marks the active side.</td></tr>
+  <tr><td class="k">Copy</td><td>Copies the current state to the plugin clipboard.</td></tr>
+  <tr><td class="k">Size</td><td>Preset window dimensions.</td></tr>
+</table>
+<p>Undo/Redo history and A/B are editor-local: they are separate from preset and session state persistence.</p>
+
+<h2 id="c14">14. Practical examples</h2>
+<h3>Vocals: clean without hollowing</h3>
+<ol>
+  <li>Low Cut at 70–90 Hz, 24 dB/octave.</li>
+  <li>A narrow bell (Q 3–6) cutting the most annoying resonance.</li>
+  <li>A gentle High Shelf for air, if needed.</li>
+  <li>A Dynamic band cutting the region that stings when the level rises, moderate negative range.</li>
+</ol>
+
+<h3>Drum bus: transient control</h3>
+<ol>
+  <li>Low-Q bell boost on the body (60–120 Hz).</li>
+  <li>A Dynamic band cutting mid-highs to tame hard hits.</li>
+  <li>Watch the L/R meters and use Output to return to the starting level.</li>
+</ol>
+
+<h3>Master: surgical corrections</h3>
+<ol>
+  <li>Use few bands and small gains.</li>
+  <li>If you use Linear FIR for linear phase, account for latency when comparing with dry, and use Mix with care.</li>
+  <li>Always check against bypass: the correction must remain an improvement.</li>
+</ol>
+
+<h2 id="c15">15. What the plugin does not do</h2>
+<ul>
+  <li>It is not a limiter and does not normalize level.</li>
+  <li>It does not claim perceptual transparency: it is an equalizer, with the phase and pre-ringing of the chosen modes.</li>
+  <li>These packages do not include AAX.</li>
+  <li>Solo is not automatable and is not stored in presets.</li>
+  <li>The external key is not managed by the plugin alone: the DAW must route it.</li>
+</ul>
+
+<h2 id="c16">16. Troubleshooting</h2>
+<table>
+  <tr><th>Symptom</th><th>What to do</th></tr>
+  <tr><td>The plugin is not listed in the DAW</td><td>Restart the DAW after installation and force a plug-in rescan. On macOS check that <code>Aester EQ.component</code> is in <code>/Library/Audio/Plug-Ins/Components</code>.</td></tr>
+  <tr><td>macOS blocks the standalone</td><td>Right-click the app → <strong>Open</strong>. The package is not notarized.</td></tr>
+  <tr><td>Windows flags the file as unsafe</td><td>Confirm in SmartScreen: the installer is not signed with a commercial certificate.</td></tr>
+  <tr><td>Missing DLL error on Windows</td><td>Install the official Microsoft Visual C++ 2015-2022 Redistributable x64.</td></tr>
+  <tr><td>The session cannot find the plugin after updating</td><td>1.3.0 has a new identity: reinstall 1.2.0 to reopen the session, or reload the plugin and restore the parameters.</td></tr>
+  <tr><td>Latency feels high</td><td>Check the phase path in the footer: Live is zero delay, Analog FIR 320 samples, Spectral +1024.</td></tr>
+  <tr><td>A/B comparison does nothing</td><td>A/B is local to the open editor and is not stored in presets.</td></tr>
+</table>
+
+<h2 id="c17">17. Specifications and license</h2>
+<table class="kv">
+  <tr><td>Product</td><td>Aester EQ 1.3.0 — DropDownAcademy</td></tr>
+  <tr><td>Bands</td><td>24, over four pages of six</td></tr>
+  <tr><td>Shapes</td><td>10 (Bell, Low Shelf, Low Cut, High Shelf, High Cut, Notch, Band Pass, Tilt Shelf, Flat Tilt, All Pass)</td></tr>
+  <tr><td>Modes</td><td>Static, Dynamic, Spectral</td></tr>
+  <tr><td>Stereo placements</td><td>Stereo, Left, Right, Mid, Side</td></tr>
+  <tr><td>Paths</td><td>Live IIR, Analog FIR, Linear FIR (5 resolutions), Spectral</td></tr>
+  <tr><td>Formats</td><td>AU + standalone (macOS arm64), VST3 + standalone (Windows x64)</td></tr>
+  <tr><td>License</td><td>AGPL-3.0-only. Source code is included in the macOS package.</td></tr>
+</table>
+<p>Distributed by DropDownAcademy. Third-party library notices are in <code>THIRD_PARTY_NOTICES.md</code>.</p>
+
+<footer>Aester EQ 1.3.0 — User manual — DropDownAcademy · www.dropdownacademy.com</footer>
+</body>
+</html>

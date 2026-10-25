@@ -1,3 +1,3 @@
 #!/bin/bash
-# Aester EQ installs alongside other Neurora products; no migration is performed.
+# Aester EQ installs alongside other DropDownAcademy products; no migration is performed.
 exit 0

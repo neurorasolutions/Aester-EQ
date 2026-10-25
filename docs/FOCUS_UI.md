@@ -1,6 +1,6 @@
 # Focus UI and monitoring
 
-These features are included in the macOS 1.2.0 preview package.
+These features are included in the 1.3.0 DropDownAcademy packages.
 
 - Floating selected-band frequency/gain/Q controls, fluorescent yellow accents, narrow output meters and compact footer.
 - No band controls are displayed until a band is created. A single click selects existing nodes; double-click adds a band.

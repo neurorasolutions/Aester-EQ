@@ -8,6 +8,6 @@ The global Mix parameter is appended to the parameter list (396 total, including
 
 The editor combines a resizable response graph, a floating selected-band panel and rotary global controls. The Mid/Side panel follows the output-mode dropdown. Parameter attachments connect these controls to the processor. Freeze suppresses spectrum-display updates, not audio processing or metering. Parameter attachments remain the source of control values.
 
-Source state schema 8 appends independent Mid/Side gain and polarity controls. Earlier states load these at unity gain and normal polarity; Mix defaults to 100% when missing. Product identifiers are separate from other Neurora plug-ins.
+Source state schema 8 appends independent Mid/Side gain and polarity controls. Earlier states load these at unity gain and normal polarity; Mix defaults to 100% when missing. Product identifiers are separate from other DropDownAcademy plug-ins.
 
 Solo is a non-persistent atomic monitoring request. A smoothed TPT state-variable filter isolates a region of the final EQ output, with L/R/M/S routing and a 20 ms crossfade. It introduces filter phase but no buffering latency and allocates no memory in the audio callback. Closing the editor clears the request.

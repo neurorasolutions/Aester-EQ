@@ -1,4 +1,4 @@
-# Aester EQ by Neurora
+# Aester EQ by DropDownAcademy
 
 A 24-band equalizer for focused tonal shaping, dynamic control and frequency-selective spectral processing.
 
@@ -23,14 +23,14 @@ The graph displays the **wet response before Mix**. Blending dry and wet can cha
 
 ## Downloads
 
-The macOS 1.2.0 package includes the Focus UI, Solo monitoring and independent Mid/Side output controls.
+Version 1.3.0 is the DropDownAcademy edition. The processing engine is unchanged from 1.2.0; this release adds the DropDownAcademy identity, the new installer flow and the Italian/English user manual.
 
 | Platform | Package | Status |
 |---|---|---|
-| macOS Apple Silicon | [Aester EQ 1.2.0 DMG](releases/Aester-EQ-Neurora-1.2.0-macOS-arm64.dmg) | Development preview: AU + standalone |
-| Windows x64 | [Build status](https://github.com/neurorasolutions/Aester-EQ/actions/workflows/windows.yml) | VST3 + standalone; installer validation in progress |
+| macOS Apple Silicon | `Aester-EQ-DropDownAcademy-1.3.0-macOS-arm64.dmg` | AU + standalone, ad hoc signed |
+| Windows x64 | `Aester-EQ-DropDownAcademy-1.3.0-Windows-x64.exe` | VST3 + standalone, unsigned |
 
-Save your session and close your DAW before installing. Builds are unsigned for distribution; the Mac binaries are ad hoc signed and not notarized. Windows installation and DAW compatibility still need interactive verification. [Installation notes](docs/INSTALLATION.md).
+Save your session and close your DAW before installing. Builds are not notarized: the Mac binaries are ad hoc signed, the Windows installer is unsigned and may show a SmartScreen warning. [Installation notes](docs/INSTALLATION.md). The Italian and English manuals are in `MANUALS/`.
 
 ## Technical character
 
@@ -40,6 +40,6 @@ Read the [single-product technical evaluation](docs/TECHNICAL_EVALUATION.md), [t
 
 ## Free and open source
 
-Produced by [Neurora](https://www.neurora.it). Contributions and reproducible bug reports are welcome. Source is licensed under AGPL-3.0-only; retain all [third-party notices](THIRD_PARTY_NOTICES.md). Project licensing does not impose an additional non-commercial restriction.
+Produced by [DropDownAcademy](https://www.dropdownacademy.com). Contributions and reproducible bug reports are welcome. Source is licensed under AGPL-3.0-only; retain all [third-party notices](THIRD_PARTY_NOTICES.md). Project licensing does not impose an additional non-commercial restriction.
 
 This repository contains Aester EQ source, technical documentation and platform packages.

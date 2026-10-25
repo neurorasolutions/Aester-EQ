@@ -26,7 +26,7 @@ The program renders 55 single-product sine cases at 48 kHz, with .05 peak input 
 python3 packaging/build_release.py --build-dir build
 ```
 
-This creates an ad hoc signed Mac AU/app, PKG, complete source archive and verified DMG. Windows uses `packaging/windows/installer.nsi`. Neither package installs or migrates other Neurora products.
+This creates an ad hoc signed Mac AU/app, PKG, complete source archive and verified DMG. Windows uses `packaging/windows/installer.nsi`. Neither package installs or migrates other DropDownAcademy products.
 
 Math-only builds use `-DBUILD_PLUGIN=OFF` and run six suites. Optional AAX Native development builds use `-DAESTER_BUILD_AAX=ON`; see [AAX status](AAX.md). AAX is not part of the user installers.
 

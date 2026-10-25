@@ -3,6 +3,8 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+env:
+  VERSION: 1.3.0
 jobs:
   windows:
     runs-on: windows-2022
@@ -24,24 +26,28 @@ jobs:
           New-Item -ItemType Directory -Force windows-release
           $source = (Get-Location).Path
           $build = "$source\build-windows"
-          $output = "$source\windows-release\Aester-EQ-Neurora-1.1.0-Windows-x64.exe"
-          & "${env:ProgramFiles(x86)}\NSIS\makensis.exe" "/DSOURCE=$source" "/DBUILD=$build" "/DOUTPUT=$output" packaging/windows/installer.nsi
+          $output = "$source\windows-release\Aester-EQ-DropDownAcademy-$env:VERSION-Windows-x64.exe"
+          & "${env:ProgramFiles(x86)}\NSIS\makensis.exe" "/DSOURCE=$source" "/DBUILD=$build" "/DOUTPUT=$output" "/DVERSION=$env:VERSION" packaging/windows/installer.nsi
           if ($LASTEXITCODE -ne 0) { throw "Installer compilation failed" }
           Get-FileHash $output -Algorithm SHA256 | Format-List | Out-File windows-release/SHA256.txt
       - name: Verify silent install on disposable runner
         shell: pwsh
         run: |
-          $installer = (Resolve-Path windows-release/Aester-EQ-Neurora-1.1.0-Windows-x64.exe).Path
+          $installer = (Resolve-Path "windows-release/Aester-EQ-DropDownAcademy-$env:VERSION-Windows-x64.exe").Path
           $process = Start-Process -FilePath $installer -ArgumentList '/S' -Wait -PassThru
           if ($process.ExitCode -ne 0) { throw "Silent installer failed: $($process.ExitCode)" }
-          $app = "$env:ProgramFiles\Neurora\Aester EQ\Aester EQ.exe"
+          $app = "$env:ProgramFiles\DropDownAcademy\Aester EQ\Aester EQ.exe"
           $vst = "$env:CommonProgramFiles\VST3\Aester EQ.vst3\Contents\x86_64-win\Aester EQ.vst3"
           if (!(Test-Path $app) -or !(Test-Path $vst)) { throw "Installed artifacts missing" }
           $built = 'build-windows/DistillazioneEQ_artefacts/Release/VST3/Aester EQ.vst3/Contents/x86_64-win/Aester EQ.vst3'
           if ((Get-FileHash $vst).Hash -ne (Get-FileHash $built).Hash) { throw "Installed VST3 differs from build" }
           "Silent installation and installed VST3 hash verified; DAW loading not tested." | Out-File windows-release/INSTALLATION-VERIFIED.txt
+      - name: Package standalone VST3 folder
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "build-windows/DistillazioneEQ_artefacts/Release/VST3/Aester EQ.vst3" -DestinationPath "windows-release/Aester-EQ-DropDownAcademy-$env:VERSION-VST3-x64.zip"
       - uses: actions/upload-artifact@v7
         with:
-          name: Aester-EQ-Windows-x64
+          name: Aester-EQ-DropDownAcademy-Windows-x64
           path: windows-release/
           if-no-files-found: error
