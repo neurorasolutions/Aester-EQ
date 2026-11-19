@@ -13,6 +13,9 @@ public:
     void drawButtonText(juce::Graphics&,juce::TextButton&,bool,bool) override;
     void drawButtonBackground(juce::Graphics&,juce::Button&,const juce::Colour&,bool,bool) override;
     void drawLinearSlider(juce::Graphics&,int,int,int,int,float,float,float,juce::Slider::SliderStyle,juce::Slider&) override;
+    void drawComboBox(juce::Graphics&,int,int,bool,int,int,int,int,juce::ComboBox&) override;
+    void drawPopupMenuBackground(juce::Graphics&,int,int) override;
+    void drawPopupMenuItem(juce::Graphics&,const juce::Rectangle<int>&,bool,bool,bool,bool,bool,const juce::String&,const juce::String&,const juce::Drawable*,const juce::Colour*) override;
 };
 
 // Relative drags use a fixed coordinate origin even when the panel follows the band.
@@ -57,7 +60,19 @@ private:
     int bandPage=0;
     juce::TextButton previousPage{"<"},nextPage{">"};
     juce::Label pageLabel;
-    class OutputPanel final:public juce::Component {public:void paint(juce::Graphics& g)override{g.setColour(juce::Colour(0xff25212d));g.fillRoundedRectangle(getLocalBounds().toFloat(),9);g.setColour(juce::Colour(0xff68606e));g.drawRoundedRectangle(getLocalBounds().toFloat().reduced(1),9,1);}};
+    class OutputPanel final:public juce::Component {public:void paint(juce::Graphics& g)override{
+        auto b=getLocalBounds().toFloat().reduced(1.5f);
+        g.setColour(juce::Colours::black.withAlpha(0.42f));g.fillRoundedRectangle(b.translated(0,3).expanded(1.5f),13);
+        juce::ColourGradient glass(juce::Colour(0xc8152230),b.getX(),b.getY(),juce::Colour(0xd4091018),b.getX(),b.getBottom(),false);
+        g.setGradientFill(glass);g.fillRoundedRectangle(b,12);
+        {juce::Graphics::ScopedSaveState s(g);juce::Path clip;clip.addRoundedRectangle(b,12);g.reduceClipRegion(clip);
+            juce::ColourGradient sheen(juce::Colour(0x24ffffff),b.getX(),b.getY(),juce::Colour(0x00ffffff),b.getX(),b.getY()+b.getHeight()*0.46f,false);
+            g.setGradientFill(sheen);g.fillRect(b.withHeight(b.getHeight()*0.46f));
+        }
+        juce::ColourGradient rim(juce::Colour(0x66ffffff),b.getX(),b.getY(),juce::Colour(0x2822e4ff),b.getRight(),b.getBottom(),false);
+        g.setGradientFill(rim);g.drawRoundedRectangle(b,12,1.1f);
+        g.setColour(juce::Colour(0x18ffffff));g.drawRoundedRectangle(b.reduced(1.2f),10.8f,0.6f);
+    }};
     OutputPanel outputPanel,midSidePanel;
     juce::Slider midOutput,sideOutput;
     juce::ToggleButton midInvert{"INV MID"},sideInvert{"INV SIDE"};
@@ -76,6 +91,8 @@ private:
     bool outputSticky=false;
     void updateMeters();
     std::array<float,2> meterDisplayDb{-100,-100};
+    std::array<float,2> meterPeakHoldDb{-100,-100};
+    std::array<float,2> meterPeakHoldTimer{0,0};
     double lastMeterTime=0;
     AesterLookAndFeel style;
     EQProcessor& eqProcessor;

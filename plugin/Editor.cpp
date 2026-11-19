@@ -15,61 +15,196 @@ juce::Image curveIcon(int shape,juce::Colour colour) {
 }
 }
 void AesterLookAndFeel::drawToggleButton(juce::Graphics& g,juce::ToggleButton& button,bool over,bool down) {
-    if(button.getButtonText().isNotEmpty()){LookAndFeel_V4::drawToggleButton(g,button,over,down);return;}
+    if(button.getButtonText().isNotEmpty()){
+        auto r=button.getLocalBounds().toFloat().reduced(1);
+        const bool on=button.getToggleState();
+        if(on){
+            g.setColour(juce::Colour(0x4422e4ff));g.fillRoundedRectangle(r.expanded(1.5f),6.5f);
+            juce::ColourGradient activeGrad(juce::Colour(0xff3cebff),r.getX(),r.getY(),juce::Colour(0xff14b8d4),r.getX(),r.getBottom(),false);
+            g.setGradientFill(activeGrad);g.fillRoundedRectangle(r,5);
+            g.setColour(juce::Colour(0xffb8f7ff));g.drawRoundedRectangle(r,5,0.9f);
+            const float dotX=r.getX()+10,dotY=r.getCentreY();
+            g.setColour(juce::Colour(0xff06121a));g.fillEllipse(dotX-3,dotY-3,6,6);
+            g.setColour(juce::Colour(0xff06121a));
+            g.setFont(juce::FontOptions(11,juce::Font::bold));
+            g.drawText(button.getButtonText(),r.withTrimmedLeft(18).toNearestInt(),juce::Justification::centredLeft);
+            return;
+        }
+        g.setColour(down?juce::Colour(0xff1d2b38):over?juce::Colour(0xff17232e):juce::Colour(0xff111922));
+        g.fillRoundedRectangle(r,5);
+        g.setColour(juce::Colour(over?0xff365066:0xff243544));
+        g.drawRoundedRectangle(r,5,0.8f);
+        const float dotX=r.getX()+10,dotY=r.getCentreY();
+        g.setColour(juce::Colour(0xff425768));
+        g.fillEllipse(dotX-3,dotY-3,6,6);
+        g.setColour(juce::Colour(over?0xffcfe3f2:0xff9bb0c0));
+        g.setFont(juce::FontOptions(11,juce::Font::plain));
+        g.drawText(button.getButtonText(),r.withTrimmedLeft(18).toNearestInt(),juce::Justification::centredLeft);
+        return;
+    }
     float cx=button.getWidth()*.5f,cy=button.getHeight()*.5f;juce::Path arc;arc.addCentredArc(cx,cy,6,6,0,.55f,juce::MathConstants<float>::twoPi-.55f,true);
-    g.setColour(button.getToggleState()?juce::Colour(0xffdfff00):juce::Colour(0xff88818d));g.strokePath(arc,juce::PathStrokeType(1.3f));g.drawLine(cx,cy-8,cx,cy-1,1.3f);
+    g.setColour(button.getToggleState()?juce::Colour(0xff22e4ff):juce::Colour(0xff5a6d7e));g.strokePath(arc,juce::PathStrokeType(1.4f));g.drawLine(cx,cy-8,cx,cy-1,1.4f);
 }
 void AesterLookAndFeel::drawButtonText(juce::Graphics& g,juce::TextButton& button,bool over,bool down) {
-    if(button.getProperties().contains("icon")){auto icon=button.getProperties()["icon"].toString();auto cx=button.getWidth()*.5f,cy=button.getHeight()*.5f;g.setColour(button.isEnabled()?juce::Colour(0xffbab3bf):juce::Colour(0xff625c68));if(icon=="settings"){for(int i=-1;i<=1;++i)g.fillEllipse(cx+float(i*5)-1.5f,cy-1.5f,3,3);}else{bool reverse=icon=="redo";const float direction=reverse?1.0f:-1.0f;juce::Path path;path.startNewSubPath(cx-direction*6,cy+6);path.cubicTo(cx-direction*11,cy-7,cx+direction*4,cy-10,cx+direction*8,cy-3);g.strokePath(path,juce::PathStrokeType(1.8f,juce::PathStrokeType::curved,juce::PathStrokeType::rounded));juce::Path arrow;arrow.startNewSubPath(cx+direction*8,cy-3);arrow.lineTo(cx+direction*1,cy-4);arrow.lineTo(cx+direction*7,cy-10);arrow.closeSubPath();g.fillPath(arrow);}return;}
-    if(!button.getProperties().contains("shape")){LookAndFeel_V4::drawButtonText(g,button,over,down);return;}
-    g.drawImageWithin(curveIcon(int(button.getProperties()["shape"]),juce::Colour(0xffbdb7c5)),4,4,27,20,juce::RectanglePlacement::centred);
-    g.setColour(juce::Colour(0xffd5cfd9));g.setFont(juce::FontOptions(10));g.drawText(button.getButtonText(),35,1,button.getWidth()-38,button.getHeight()-2,juce::Justification::left);
+    if(bool(button.getProperties()["rangeButton"])){
+        g.setColour(juce::Colour(over||down?0xffffd966:0xfff5c242));
+        g.setFont(juce::FontOptions(12.0f,juce::Font::bold));
+        g.drawText(button.getButtonText(),button.getLocalBounds(),juce::Justification::centred);
+        return;
+    }
+    if(button.getProperties().contains("icon")){auto icon=button.getProperties()["icon"].toString();auto cx=button.getWidth()*.5f,cy=button.getHeight()*.5f;g.setColour(button.isEnabled()?juce::Colour(over?0xffe8f6ff:0xff9eb4c4):juce::Colour(0xff41505d));if(icon=="settings"){for(int i=-1;i<=1;++i)g.fillEllipse(cx+float(i*5)-1.5f,cy-1.5f,3,3);}else{bool reverse=icon=="redo";const float direction=reverse?1.0f:-1.0f;juce::Path path;path.startNewSubPath(cx-direction*6,cy+6);path.cubicTo(cx-direction*11,cy-7,cx+direction*4,cy-10,cx+direction*8,cy-3);g.strokePath(path,juce::PathStrokeType(1.7f,juce::PathStrokeType::curved,juce::PathStrokeType::rounded));juce::Path arrow;arrow.startNewSubPath(cx+direction*8,cy-3);arrow.lineTo(cx+direction*1,cy-4);arrow.lineTo(cx+direction*7,cy-10);arrow.closeSubPath();g.fillPath(arrow);}return;}
+    if(!button.getProperties().contains("shape")){
+        const bool toggled=button.getToggleState();
+        g.setColour(toggled?juce::Colour(0xff0b1016):button.isEnabled()?juce::Colour(over?0xfff0f8ff:0xffcfe0ec):juce::Colour(0xff51616e));
+        g.setFont(juce::FontOptions(11.5f,toggled?juce::Font::bold:juce::Font::plain));
+        g.drawText(button.getButtonText(),button.getLocalBounds().reduced(4,1),juce::Justification::centred);
+        return;
+    }
+    g.drawImageWithin(curveIcon(int(button.getProperties()["shape"]),juce::Colour(0xff22e4ff)),5,4,25,20,juce::RectanglePlacement::centred);
+    g.setColour(juce::Colour(0xffd8eaf6));g.setFont(juce::FontOptions(11));g.drawText(button.getButtonText(),33,1,button.getWidth()-36,button.getHeight()-2,juce::Justification::left);
 }
 AesterLookAndFeel::AesterLookAndFeel() {
-    setColour(juce::Slider::trackColourId,juce::Colour(0xff425d59));
-    setColour(juce::Slider::thumbColourId,juce::Colour(0xffdfff00));
-    setColour(juce::Slider::backgroundColourId,juce::Colour(0xff23383a));
-    setColour(juce::Slider::textBoxBackgroundColourId,juce::Colour(0xff142225));
-    setColour(juce::ComboBox::backgroundColourId,juce::Colour(0xff23383a));
-    setColour(juce::ComboBox::outlineColourId,juce::Colours::transparentBlack);
-    setColour(juce::ComboBox::textColourId,juce::Colour(0xffdedde0));
-    setColour(juce::PopupMenu::backgroundColourId,juce::Colour(0xff1b2c2d));
-    setColour(juce::TextButton::textColourOffId,juce::Colour(0xffd0cdd3));
-    setColour(juce::Slider::textBoxTextColourId,juce::Colour(0xffe8e4e9));
-    setColour(juce::ToggleButton::textColourId,juce::Colour(0xffc9c4ce));
-    setColour(juce::ToggleButton::tickColourId,juce::Colour(0xffdfff00));
+    setColour(juce::Slider::trackColourId,juce::Colour(0xff1e3545));
+    setColour(juce::Slider::thumbColourId,juce::Colour(0xff22e4ff));
+    setColour(juce::Slider::backgroundColourId,juce::Colour(0xff0e1720));
+    setColour(juce::Slider::textBoxBackgroundColourId,juce::Colour(0xff0a1118));
+    setColour(juce::Slider::textBoxOutlineColourId,juce::Colour(0xff1e3040));
+    setColour(juce::ComboBox::backgroundColourId,juce::Colour(0xff111b24));
+    setColour(juce::ComboBox::outlineColourId,juce::Colour(0xff263a4b));
+    setColour(juce::ComboBox::textColourId,juce::Colour(0xffd8eaf6));
+    setColour(juce::PopupMenu::backgroundColourId,juce::Colour(0xf2111821));
+    setColour(juce::PopupMenu::textColourId,juce::Colour(0xffdceaf5));
+    setColour(juce::PopupMenu::highlightedBackgroundColourId,juce::Colour(0x3322e4ff));
+    setColour(juce::PopupMenu::highlightedTextColourId,juce::Colour(0xffffffff));
+    setColour(juce::TextButton::textColourOffId,juce::Colour(0xffcfe0ec));
+    setColour(juce::Slider::textBoxTextColourId,juce::Colour(0xffe6f4ff));
+    setColour(juce::ToggleButton::textColourId,juce::Colour(0xffb8ccd9));
+    setColour(juce::ToggleButton::tickColourId,juce::Colour(0xff22e4ff));
 }
 void AesterLookAndFeel::drawButtonBackground(juce::Graphics& g,juce::Button& b,const juce::Colour&,bool over,bool down) {
     auto r=b.getLocalBounds().toFloat().reduced(1);
-    if(bool(b.getProperties()["toolbar"])){if(over||down){g.setColour(juce::Colour(0xff363039));g.fillRoundedRectangle(r,4);}return;}
-    g.setColour(juce::Colour(b.getToggleState()?0xffdfff00:down?0xff454149:over?0xff343038:0xff242127));g.fillRoundedRectangle(r,4);
-    g.setColour(juce::Colour(0xff49434b));g.drawRoundedRectangle(r,4,0.7f);
+    if(bool(b.getProperties()["rangeButton"])){
+        juce::ColourGradient pill(juce::Colour(over?0xff242c36:0xff1a222c),r.getX(),r.getY(),juce::Colour(0xff10161e),r.getX(),r.getBottom(),false);
+        g.setGradientFill(pill);g.fillRoundedRectangle(r,6);
+        g.setColour(juce::Colour(over||down?0xaaf5c242:0x55485b6e));
+        g.drawRoundedRectangle(r,6,1.0f);
+        return;
+    }
+    if(bool(b.getProperties()["toolbar"])){
+        if(over||down){
+            g.setColour(juce::Colour(down?0xff1e2d3b:0xff15212c));g.fillRoundedRectangle(r,6);
+            g.setColour(juce::Colour(0x6622e4ff));g.drawRoundedRectangle(r,6,0.8f);
+        }
+        return;
+    }
+    const bool on=b.getToggleState();
+    if(on){
+        g.setColour(juce::Colour(0x44f5c242));g.fillRoundedRectangle(r.expanded(1.5f),7);
+        juce::ColourGradient activeGrad(juce::Colour(0xfff5d142),r.getX(),r.getY(),juce::Colour(0xffd9a826),r.getX(),r.getBottom(),false);
+        g.setGradientFill(activeGrad);g.fillRoundedRectangle(r,6);
+        g.setColour(juce::Colour(0xffffebb3));g.drawRoundedRectangle(r,6,0.9f);
+        return;
+    }
+    juce::ColourGradient grad(juce::Colour(down?0xff1f2f3d:over?0xff192633:0xff121b24),r.getX(),r.getY(),juce::Colour(down?0xff14202b:0xff0d141c),r.getX(),r.getBottom(),false);
+    g.setGradientFill(grad);g.fillRoundedRectangle(r,6);
+    g.setColour(juce::Colour(over?0xff38566e:0xff233443));g.drawRoundedRectangle(r,6,0.85f);
+}
+void AesterLookAndFeel::drawComboBox(juce::Graphics& g,int w,int h,bool down,int,int,int,int,juce::ComboBox& box) {
+    auto r=juce::Rectangle<float>(0,0,float(w),float(h)).reduced(1);
+    juce::ColourGradient grad(juce::Colour(down?0xff1d2d3b:0xff131d27),r.getX(),r.getY(),juce::Colour(0xff0d141c),r.getX(),r.getBottom(),false);
+    g.setGradientFill(grad);g.fillRoundedRectangle(r,6);
+    g.setColour(juce::Colour(box.isMouseOver()?0xff38566e:0xff243646));g.drawRoundedRectangle(r,6,0.85f);
+    juce::Path arrow;const float ax=float(w)-14,ay=float(h)*.5f;
+    arrow.startNewSubPath(ax-4,ay-2);arrow.lineTo(ax,ay+2.5f);arrow.lineTo(ax+4,ay-2);
+    g.setColour(juce::Colour(0xff7ea8c4));g.strokePath(arrow,juce::PathStrokeType(1.4f,juce::PathStrokeType::curved,juce::PathStrokeType::rounded));
+}
+void AesterLookAndFeel::drawPopupMenuBackground(juce::Graphics& g,int w,int h) {
+    auto r=juce::Rectangle<float>(0,0,float(w),float(h)).reduced(0.5f);
+    juce::ColourGradient glass(juce::Colour(0xd815202d),r.getX(),r.getY(),juce::Colour(0xe20a1018),r.getX(),r.getBottom(),false);
+    g.setGradientFill(glass);g.fillRoundedRectangle(r,11);
+    {juce::Graphics::ScopedSaveState s(g);juce::Path clip;clip.addRoundedRectangle(r,11);g.reduceClipRegion(clip);
+        juce::ColourGradient sheen(juce::Colour(0x1effffff),r.getX(),r.getY(),juce::Colour(0x00ffffff),r.getX(),r.getY()+r.getHeight()*0.42f,false);
+        g.setGradientFill(sheen);g.fillRect(r.withHeight(r.getHeight()*0.42f));
+    }
+    juce::ColourGradient rim(juce::Colour(0x55ffffff),r.getX(),r.getY(),juce::Colour(0x2a22e4ff),r.getRight(),r.getBottom(),false);
+    g.setGradientFill(rim);g.drawRoundedRectangle(r,11,1.0f);
+    g.setColour(juce::Colour(0x16ffffff));g.drawRoundedRectangle(r.reduced(1),10,0.6f);
+}
+void AesterLookAndFeel::drawPopupMenuItem(juce::Graphics& g,const juce::Rectangle<int>& area,bool isSeparator,bool isActive,bool isHighlighted,bool isTicked,bool hasSubMenu,const juce::String& text,const juce::String&,const juce::Drawable* icon,const juce::Colour*) {
+    if(isSeparator){g.setColour(juce::Colour(0x3340586d));g.fillRect(area.reduced(10,0).withHeight(1).withCentre(area.getCentre()));return;}
+    auto r=area.reduced(4,1).toFloat();
+    if(isHighlighted&&isActive){
+        g.setColour(juce::Colour(0x3022e4ff));g.fillRoundedRectangle(r,6);
+        g.setColour(juce::Colour(0x6622e4ff));g.drawRoundedRectangle(r,6,0.7f);
+    }
+    if(isTicked){
+        juce::Path tick;const float tx=r.getX()+12,ty=r.getCentreY();
+        tick.startNewSubPath(tx-4,ty);tick.lineTo(tx-1,ty+3.5f);tick.lineTo(tx+5,ty-4);
+        g.setColour(juce::Colour(0xfff5c242));g.strokePath(tick,juce::PathStrokeType(2.0f,juce::PathStrokeType::curved,juce::PathStrokeType::rounded));
+    }
+    int textLeft=int(r.getX())+26;
+    if(icon!=nullptr){icon->drawWithin(g,juce::Rectangle<float>(r.getX()+24,r.getY()+3,28,r.getHeight()-6),juce::RectanglePlacement::centred,1.0f);textLeft+=32;}
+    g.setColour(isActive?(isHighlighted?juce::Colours::white:juce::Colour(0xffdce9f5)):juce::Colour(0xff556674));
+    g.setFont(juce::FontOptions(13.0f,isTicked?juce::Font::bold:juce::Font::plain));
+    g.drawText(text,textLeft,area.getY(),area.getRight()-textLeft-16,area.getHeight(),juce::Justification::centredLeft);
+    if(hasSubMenu){
+        juce::Path sub;const float sx=r.getRight()-10,sy=r.getCentreY();
+        sub.startNewSubPath(sx-3,sy-4);sub.lineTo(sx+2,sy);sub.lineTo(sx-3,sy+4);
+        g.setColour(juce::Colour(0xff8aa7bd));g.strokePath(sub,juce::PathStrokeType(1.3f));
+    }
 }
 void AesterLookAndFeel::drawRotarySlider(juce::Graphics& g,int x,int y,int w,int h,float pos,float start,float end,juce::Slider& slider) {
     auto r=juce::Rectangle<float>(float(x),float(y),float(w),float(h)).reduced(7);
     if(bool(slider.getProperties()["rangeRing"])){
         const float radius=std::min(r.getWidth(),r.getHeight())*.5f,cx=r.getCentreX(),cy=r.getCentreY();
         juce::Path rail,arc;rail.addCentredArc(cx,cy,radius,radius,0,start,end,true);arc.addCentredArc(cx,cy,radius,radius,0,start,start+pos*(end-start),true);
-        g.setColour(juce::Colour(0xff45404d));g.strokePath(rail,juce::PathStrokeType(6));g.setColour(juce::Colour(0xffa14859));g.strokePath(arc,juce::PathStrokeType(6));
-        const auto a=start+pos*(end-start);g.setColour(juce::Colour(0xffe5d05a));g.drawLine(cx+std::sin(a)*(radius-4),cy-std::cos(a)*(radius-4),cx+std::sin(a)*(radius+4),cy-std::cos(a)*(radius+4),2);return;
+        g.setColour(juce::Colour(0xff1e2d3b));g.strokePath(rail,juce::PathStrokeType(5));g.setColour(juce::Colour(0xffff5c7a));g.strokePath(arc,juce::PathStrokeType(5));
+        const auto a=start+pos*(end-start);g.setColour(juce::Colour(0xfff5c242));g.drawLine(cx+std::sin(a)*(radius-4),cy-std::cos(a)*(radius-4),cx+std::sin(a)*(radius+4),cy-std::cos(a)*(radius+4),2);return;
     }
-    float radius=std::min(r.getWidth(),r.getHeight())/2,cx=r.getCentreX(),cy=r.getCentreY();
-    g.setColour(juce::Colours::black.withAlpha(0.45f));g.fillEllipse(cx-radius+1,cy-radius+3,2*radius,2*radius);
-    juce::ColourGradient gradient(juce::Colour(0xff47424b),cx,cy-radius,juce::Colour(0xff242126),cx,cy+radius,false);
-    g.setGradientFill(gradient);g.fillEllipse(cx-radius,cy-radius,2*radius,2*radius);
-    g.setColour(juce::Colour(0xff68606c));g.drawEllipse(cx-radius,cy-radius,2*radius,2*radius,0.7f);
-    juce::Path arc;arc.addCentredArc(cx,cy,radius+2,radius+2,0,start,start+pos*(end-start),true);
-    g.setColour(slider.findColour(juce::Slider::rotarySliderFillColourId));g.strokePath(arc,juce::PathStrokeType(2));
-    float angle=start+pos*(end-start);g.setColour(juce::Colour(0xfff4edf3));
-    g.drawLine(cx+std::sin(angle)*radius*.64f,cy-std::cos(angle)*radius*.64f,cx+std::sin(angle)*radius*.87f,cy-std::cos(angle)*radius*.87f,1.5f);
+    const float radius=std::min(r.getWidth(),r.getHeight())*0.5f,cx=r.getCentreX(),cy=r.getCentreY();
+    const float angle=start+pos*(end-start);
+    const auto accent=slider.findColour(juce::Slider::rotarySliderFillColourId);
+    // Outer track rail
+    juce::Path rail,arc;
+    rail.addCentredArc(cx,cy,radius+2.5f,radius+2.5f,0,start,end,true);
+    arc.addCentredArc(cx,cy,radius+2.5f,radius+2.5f,0,start,angle,true);
+    g.setColour(juce::Colour(0xff182532));
+    g.strokePath(rail,juce::PathStrokeType(2.8f,juce::PathStrokeType::curved,juce::PathStrokeType::rounded));
+    // Soft luminous glow + crisp neon arc
+    g.setColour(accent.withAlpha(0.22f));
+    g.strokePath(arc,juce::PathStrokeType(6.0f,juce::PathStrokeType::curved,juce::PathStrokeType::rounded));
+    g.setColour(accent);
+    g.strokePath(arc,juce::PathStrokeType(2.4f,juce::PathStrokeType::curved,juce::PathStrokeType::rounded));
+    // Subtle precision drop shadow & machined titanium body
+    g.setColour(juce::Colours::black.withAlpha(0.55f));
+    g.fillEllipse(cx-radius+1,cy-radius+3,2*radius,2*radius);
+    juce::ColourGradient body(juce::Colour(0xff263340),cx-radius*0.3f,cy-radius,juce::Colour(0xff0e151d),cx+radius*0.3f,cy+radius,false);
+    g.setGradientFill(body);g.fillEllipse(cx-radius,cy-radius,2*radius,2*radius);
+    // Inner recessed bevel ring
+    g.setColour(juce::Colour(0xff384d60).withAlpha(0.75f));
+    g.drawEllipse(cx-radius,cy-radius,2*radius,2*radius,0.9f);
+    g.setColour(juce::Colour(0xff0b1118));
+    g.drawEllipse(cx-radius*0.76f,cy-radius*0.76f,radius*1.52f,radius*1.52f,0.8f);
+    // Glowing pointer needle
+    const float ix1=cx+std::sin(angle)*radius*0.42f,iy1=cy-std::cos(angle)*radius*0.42f;
+    const float ix2=cx+std::sin(angle)*radius*0.86f,iy2=cy-std::cos(angle)*radius*0.86f;
+    g.setColour(accent.withAlpha(0.45f));g.drawLine(ix1,iy1,ix2,iy2,3.4f);
+    g.setColour(juce::Colour(0xfff4fbff));g.drawLine(ix1,iy1,ix2,iy2,1.6f);
 }
 
 
 void AesterLookAndFeel::drawLinearSlider(juce::Graphics& g,int x,int y,int w,int h,float pos,float min,float max,juce::Slider::SliderStyle kind,juce::Slider& slider){
     if(!bool(slider.getProperties()["threshold"])) {LookAndFeel_V4::drawLinearSlider(g,x,y,w,h,pos,min,max,kind,slider);return;}
-    const float cx=x+w*.5f;juce::ColourGradient colour(juce::Colour(0xffb64c42),cx,float(y),juce::Colour(0xff588e17),cx,float(y+h),false);colour.addColour(.45,juce::Colour(0xffb7a31c));g.setGradientFill(colour);g.fillRoundedRectangle(cx-3,float(y),6,float(h),2);
-    const float level=juce::jlimit(0.0f,1.0f,(float(slider.getProperties()["detectorDb"])+80)/80);g.setColour(juce::Colour(0xff101a1c));g.fillRoundedRectangle(cx-3,float(y),6,float(h)*(1-level),2);g.setColour(juce::Colours::white.withAlpha(.7f));g.drawHorizontalLine(int(y+h*(1-level)),cx-4,cx+4);
-    g.setColour(juce::Colour(0xff79767c));g.fillRoundedRectangle(cx-10,pos-5,20,10,3);g.setColour(juce::Colour(0xffd4cdd4));g.drawHorizontalLine(int(pos),cx-6,cx+6);
+    const float cx=x+w*.5f;
+    juce::ColourGradient colour(juce::Colour(0xffff4d6a),cx,float(y),juce::Colour(0xff1fd6a8),cx,float(y+h),false);
+    colour.addColour(.45,juce::Colour(0xfff5c242));
+    g.setGradientFill(colour);g.fillRoundedRectangle(cx-3,float(y),6,float(h),3);
+    const float level=juce::jlimit(0.0f,1.0f,(float(slider.getProperties()["detectorDb"])+80)/80);
+    g.setColour(juce::Colour(0xff0d151d));g.fillRoundedRectangle(cx-3,float(y),6,float(h)*(1-level),3);
+    g.setColour(juce::Colour(0xff22e4ff).withAlpha(.85f));g.drawHorizontalLine(int(y+h*(1-level)),cx-5,cx+5);
+    g.setColour(juce::Colour(0xff20303f));g.fillRoundedRectangle(cx-11,pos-5,22,10,4);
+    g.setColour(juce::Colour(0xff22e4ff));g.drawRoundedRectangle(cx-11,pos-5,22,10,4,0.9f);
+    g.setColour(juce::Colours::white);g.drawHorizontalLine(int(pos),cx-6,cx+6);
 }
 
 class EQEditor::BandCard final : public juce::Component {
@@ -161,7 +296,20 @@ EQEditor::EQEditor(EQProcessor& p):AudioProcessorEditor(p),eqProcessor(p) {
     remove.onClick=[this]{eqProcessor.setValue(EQProcessor::bandID(selected,"on"),0);};
     reset.onClick=[this]{for(int i=0;i<24;++i){eqProcessor.setValue(EQProcessor::bandID(i,"on"),0);eqProcessor.setValue(EQProcessor::bandID(i,"shape"),0);eqProcessor.setValue(EQProcessor::bandID(i,"gain"),0);eqProcessor.setValue(EQProcessor::bandID(i,"frequency"),1000);eqProcessor.setValue(EQProcessor::bandID(i,"q"),1.0f);eqProcessor.setValue(EQProcessor::bandID(i,"slope"),1);eqProcessor.setValue(EQProcessor::bandID(i,"mode"),0);eqProcessor.setValue(EQProcessor::bandID(i,"external"),0);eqProcessor.setValue(EQProcessor::bandID(i,"free"),0);eqProcessor.setValue(EQProcessor::bandID(i,"triggerLow"),20);eqProcessor.setValue(EQProcessor::bandID(i,"triggerHigh"),20000);eqProcessor.setValue(EQProcessor::bandID(i,"placement"),0);eqProcessor.setValue(EQProcessor::bandID(i,"threshold"),-24);eqProcessor.setValue(EQProcessor::bandID(i,"range"),-6);eqProcessor.setValue(EQProcessor::bandID(i,"attack"),10);eqProcessor.setValue(EQProcessor::bandID(i,"release"),120);}eqProcessor.setValue("mix",1);eqProcessor.setValue("output",0);eqProcessor.setValue("balance",0);eqProcessor.setValue("balanceMode",0);eqProcessor.setValue("invert",0);eqProcessor.setValue("midGain",0);eqProcessor.setValue("sideGain",0);eqProcessor.setValue("midInvert",0);eqProcessor.setValue("sideInvert",0);eqProcessor.setValue("processingPhase",0);eqProcessor.setValue("linearResolution",1);eqProcessor.setValue("bypass",0);select(0);};
     save.onClick=[this]{preset(true);};load.onClick=[this]{preset(false);};
-    range.onClick=[this]{displayRange=displayRange==12?30:displayRange==30?6:12;range.setButtonText(juce::String(displayRange,0)+" dB");repaint();};
+    range.getProperties().set("rangeButton",true);
+    range.setTooltip("Display dB range: 3, 6, 12 or 30 dB");
+    range.onClick=[this]{
+        juce::PopupMenu menu;menu.setLookAndFeel(&menuStyle());
+        const std::array<float,4> ranges{3.f,6.f,12.f,30.f};
+        for(int i=0;i<4;++i)menu.addItem(i+1,juce::String(ranges[size_t(i)],0)+" dB",true,std::abs(displayRange-ranges[size_t(i)])<0.1f);
+        auto safe=juce::Component::SafePointer<EQEditor>(this);
+        menu.showMenuAsync(juce::PopupMenu::Options().withParentComponent(this).withTargetComponent(&range).withMinimumWidth(98).withStandardItemHeight(30),[safe,ranges](int id){
+            if(!safe||id<=0)return;
+            safe->displayRange=ranges[size_t(id-1)];
+            safe->range.setButtonText(juce::String(safe->displayRange,0)+" dB");
+            safe->resized();safe->repaint();
+        });
+    };
     shape.setVisible(false);mode.setVisible(false);
     modeSettings.setTooltip("Band processing: Static, Dynamic or Spectral");modeSettings.getProperties().set("toolbar",true);modeSettings.onClick=[this]{juce::PopupMenu menu;menu.setLookAndFeel(&menuStyle());for(int i=0;i<3;++i)menu.addItem(i+1,juce::StringArray{"Static","Dynamic","Spectral"}[i],true,eqProcessor.settings(selected).mode==i);auto safe=juce::Component::SafePointer<EQEditor>(this);const int band=selected;menu.showMenuAsync(juce::PopupMenu::Options().withParentComponent(this).withTargetComponent(&modeSettings),[safe,band](int result){if(safe&&result)safe->eqProcessor.setValue(EQProcessor::bandID(band,"mode"),float(result-1));});};
     shapeButton.onClick=[this]{showShapeMenu();};
@@ -193,7 +341,7 @@ EQEditor::EQEditor(EQProcessor& p):AudioProcessorEditor(p),eqProcessor(p) {
     previousPage.setTooltip("Previous six bands");nextPage.setTooltip("Next six bands");previousPage.onClick=[this]{select(std::max(0,bandPage-1)*6);};nextPage.onClick=[this]{select(std::min(3,bandPage+1)*6);};
     for(auto* child:std::initializer_list<juce::Component*>{&outputKnob,&outputBalance,&outputBalanceMode,&outputInvert,&outputGainLabel,&outputPanLabel})addAndMakeVisible(child);
     outputGainLabel.setText("OUTPUT",juce::dontSendNotification);outputPanLabel.setText("BALANCE",juce::dontSendNotification);
-    for(auto* slider:{&outputKnob,&outputBalance,&wetMix}){slider->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);slider->setTextBoxStyle(juce::Slider::TextBoxBelow,false,88,20);slider->setColour(juce::Slider::rotarySliderFillColourId,juce::Colour(0xffdfff00));slider->setColour(juce::Slider::textBoxOutlineColourId,juce::Colours::transparentBlack);}
+    for(auto* slider:{&outputKnob,&outputBalance,&wetMix}){slider->setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);slider->setTextBoxStyle(juce::Slider::TextBoxBelow,false,88,20);slider->setColour(juce::Slider::rotarySliderFillColourId,juce::Colour(0xff22e4ff));slider->setColour(juce::Slider::textBoxOutlineColourId,juce::Colour(0xff1e3040));}
     wetMix.setDoubleClickReturnValue(true,1);
     outputBalance.textFromValueFunction=[this](double value){if(std::abs(value)<.0005)return juce::String("C");const bool ms=eqProcessor.parameters.getRawParameterValue("balanceMode")->load()>.5f;return juce::String(value<0?(ms?"M ":"L "):(ms?"S ":"R "))+juce::String(std::abs(value)*100,0)+"%";};
     outputBalance.valueFromTextFunction=[](const juce::String& text){const auto t=text.trim().toUpperCase();if(t=="C")return 0.0;const double value=t.retainCharacters("0123456789.-").getDoubleValue()/100;return t.startsWith("L")||t.startsWith("M")?-std::abs(value):t.startsWith("R")||t.startsWith("S")?std::abs(value):value;};
@@ -210,7 +358,7 @@ EQEditor::EQEditor(EQProcessor& p):AudioProcessorEditor(p),eqProcessor(p) {
     midOutputAttachment=std::make_unique<SliderAttachment>(p.parameters,"midGain",midOutput);sideOutputAttachment=std::make_unique<SliderAttachment>(p.parameters,"sideGain",sideOutput);
     midInvertAttachment=std::make_unique<ButtonAttachment>(p.parameters,"midInvert",midInvert);sideInvertAttachment=std::make_unique<ButtonAttachment>(p.parameters,"sideInvert",sideInvert);
     outputBalanceMode.onChange=[this]{updateMidSideControls();};
-    outputInvert.setButtonText("INV ALL");outputInvert.setTooltip("Invert both output channels. Use Mid / Side controls for independent polarity.");
+    outputInvert.setButtonText("INVERT L/R");outputInvert.setTooltip("Invert polarity of both Left and Right output channels. Use Mid / Side controls for independent polarity.");
     updateMidSideControls();resized();
     observedState=captureState();stateA=stateB=observedState;history.push_back(observedState);ab.setButtonText("A* / B");
     eqProcessor.spectrum.enabled.store(true);
@@ -230,7 +378,8 @@ void EQEditor::select(int band) {
     slopeAttachment=std::make_unique<ComboAttachment>(eqProcessor.parameters,id("slope"),slope);
     modeAttachment=std::make_unique<ComboAttachment>(eqProcessor.parameters,id("mode"),mode);placementAttachment=std::make_unique<ComboAttachment>(eqProcessor.parameters,id("placement"),placement);
     thresholdAttachment=std::make_unique<SliderAttachment>(eqProcessor.parameters,id("threshold"),threshold);rangeAttachment=std::make_unique<SliderAttachment>(eqProcessor.parameters,id("range"),dynamicRange);attackAttachment=std::make_unique<SliderAttachment>(eqProcessor.parameters,id("attack"),attack);releaseAttachment=std::make_unique<SliderAttachment>(eqProcessor.parameters,id("release"),release);
-    for(auto* knob:std::initializer_list<juce::Slider*>{&threshold,&dynamicRange,&attack,&release}){knob->textFromValueFunction=[knob](double value){return juce::String(value,1);};knob->updateText();}
+    for(auto* knob:std::initializer_list<juce::Slider*>{&threshold,&dynamicRange}){knob->textFromValueFunction=[](double value){return juce::String(value,1);};knob->updateText();}
+    for(auto* knob:std::initializer_list<juce::Slider*>{&attack,&release}){knob->textFromValueFunction=[](double value){return value>=10.0?juce::String(value,0):juce::String(value,1);};knob->updateText();}
     expanded=eqProcessor.settings(selected).mode!=0;
     activeAttachment=std::make_unique<ButtonAttachment>(eqProcessor.parameters,id("on"),active);
     frequency.textFromValueFunction=[](double value){return juce::String(value,1);};
@@ -240,36 +389,97 @@ void EQEditor::select(int band) {
     for(auto* knob:std::initializer_list<juce::Slider*>{&frequency,&gain,&q})knob->setColour(juce::Slider::rotarySliderFillColourId,colour(selected));
     bandPicker.setSelectedId(selected+1,juce::dontSendNotification);resized();repaint();
 }
-juce::Colour EQEditor::colour(int band) const {if(band==selected)return juce::Colour(0xffdfff00);const juce::uint32 palette[]{0xff75ca69,0xff4ec4de,0xffb75fe1,0xffecc94b,0xffed7765,0xff6e94e5,0xffe782b8,0xffa1d681};return juce::Colour(palette[band%8]);}
+juce::Colour EQEditor::colour(int band) const {if(band==selected)return juce::Colour(0xfff5c842);const juce::uint32 palette[]{0xff22e4ff,0xff2af598,0xffb86bff,0xffffaa33,0xffff5a79,0xff4d9eff,0xff56f0c8,0xffe879f9};return juce::Colour(palette[band%8]);}
 float EQEditor::xFor(double hz) const {return plot.getX()+plot.getWidth()*float(std::log(juce::jlimit(10.0,30000.0,hz)/10)/std::log(3000.0));}
 float EQEditor::yFor(double db) const {return plot.getY()+plot.getHeight()*.5f-float(db)*plot.getHeight()/(2*displayRange);}
 double EQEditor::hzFor(float x) const {return 10*std::pow(3000.0,juce::jlimit(0.0f,1.0f,(x-plot.getX())/plot.getWidth()));}
 double EQEditor::dbFor(float y) const {return juce::jlimit(-30.0,30.0,double((plot.getY()+plot.getHeight()*.5f-y)*2*displayRange/plot.getHeight()));}
 void EQEditor::paint(juce::Graphics& g) {
-    g.fillAll(juce::Colour(0xff1a2024));
-    g.setColour(juce::Colour(0xff232a2d));g.fillRoundedRectangle(plot.expanded(8,8),6);
+    // Deep obsidian futuristic backdrop
+    juce::ColourGradient bg(juce::Colour(0xff0b1017),0,0,juce::Colour(0xff070a0f),0,float(getHeight()),false);
+    g.setGradientFill(bg);g.fillAll();
 
-    g.setColour(juce::Colour(0xffe5e9e7));g.setFont(juce::FontOptions(25,juce::Font::bold));g.drawText("AESTER EQ",24,11,185,38,juce::Justification::left);
-    g.setColour(juce::Colour(0xffa6b7b5));g.setFont(juce::FontOptions(12));g.drawText("DROPDOWNACADEMY",getWidth()-230,21,215,24,juce::Justification::centred);
-    g.setColour(juce::Colour(0xffb4c3c0));g.setFont(juce::FontOptions(10));g.drawText("WET RESPONSE / FREQUENCY",24,61,300,18,juce::Justification::left);
+    // Top header bar
+    g.setColour(juce::Colour(0xff0e151f));g.fillRect(0,0,getWidth(),56);
+    g.setColour(juce::Colour(0x3322e4ff));g.drawHorizontalLine(56,0,float(getWidth()));
+
+    // Futuristic brand mark
+    g.setColour(juce::Colour(0x4422e4ff));g.fillRoundedRectangle(20,17,6,24,3);
+    g.setColour(juce::Colour(0xff22e4ff));g.fillRoundedRectangle(21,18,4,22,2);
+    g.setColour(juce::Colour(0xffeef7ff));g.setFont(juce::FontOptions(22,juce::Font::bold));
+    g.drawText("AESTER EQ",33,12,170,34,juce::Justification::left);
+    g.setColour(juce::Colour(0xff6b8294));g.setFont(juce::FontOptions(10.5f,juce::Font::bold));
+    g.drawText("DROPDOWNACADEMY",getWidth()-190,18,168,22,juce::Justification::right);
+
+    // Cockpit plot surface
+    auto frame=plot.expanded(4,4);
+    juce::ColourGradient plotBg(juce::Colour(0xff0f1620),frame.getCentreX(),frame.getY(),juce::Colour(0xff090e14),frame.getCentreX(),frame.getBottom(),false);
+    g.setGradientFill(plotBg);g.fillRoundedRectangle(frame,8);
+    g.setColour(juce::Colour(0xff1c2d3d));g.drawRoundedRectangle(frame,8,1.0f);
+    // Subtle futuristic HUD corner ticks
+    g.setColour(juce::Colour(0x8822e4ff));
+    const float cl=10.0f;
+    g.drawLine(frame.getX()+1,frame.getY()+cl,frame.getX()+1,frame.getY()+1,1.3f);g.drawLine(frame.getX()+1,frame.getY()+1,frame.getX()+cl,frame.getY()+1,1.3f);
+    g.drawLine(frame.getRight()-cl,frame.getY()+1,frame.getRight()-1,frame.getY()+1,1.3f);g.drawLine(frame.getRight()-1,frame.getY()+1,frame.getRight()-1,frame.getY()+cl,1.3f);
+    g.drawLine(frame.getX()+1,frame.getBottom()-cl,frame.getX()+1,frame.getBottom()-1,1.3f);g.drawLine(frame.getX()+1,frame.getBottom()-1,frame.getX()+cl,frame.getBottom()-1,1.3f);
+    g.drawLine(frame.getRight()-cl,frame.getBottom()-1,frame.getRight()-1,frame.getBottom()-1,1.3f);g.drawLine(frame.getRight()-1,frame.getBottom()-cl,frame.getRight()-1,frame.getBottom()-1,1.3f);
+
     bool hasBands=false;for(int i=0;i<24;++i)hasBands=hasBands||eqProcessor.settings(i).enabled;
-    if(!hasBands){g.setFont(juce::FontOptions(15));g.drawText("Double-click the graph to add a band",int(plot.getCentreX())-200,int(plot.getCentreY())+35,400,30,juce::Justification::centred);}
-    g.setFont(juce::FontOptions(11));
+    if(!hasBands){
+        g.setColour(juce::Colour(0xff5e7588));g.setFont(juce::FontOptions(14.5f));
+        g.drawText("Double-click the graph to add a band",int(plot.getCentreX())-200,int(plot.getCentreY())+28,400,28,juce::Justification::centred);
+    }
+
+    // Frequency grid lines
+    g.setFont(juce::FontOptions(10.5f));
     for(double hz:{20.,30.,40.,50.,60.,80.,100.,150.,200.,300.,400.,500.,600.,800.,1000.,1500.,2000.,3000.,4000.,5000.,6000.,8000.,10000.,15000.,20000.}) {
-        float x=xFor(hz);g.setColour(juce::Colour(0xff2a3b3e).withAlpha(0.65f));g.drawVerticalLine(int(x),plot.getY(),plot.getBottom());
+        float x=xFor(hz);
+        const bool major=(hz==100.||hz==1000.||hz==10000.);
+        g.setColour(juce::Colour(major?0xff213647:0xff15232f).withAlpha(major?0.85f:0.65f));
+        g.drawVerticalLine(int(x),plot.getY(),plot.getBottom());
     }
     for(double hz:{20.,50.,100.,200.,500.,1000.,2000.,5000.,10000.,20000.}) {
-        g.setColour(juce::Colour(0xff9c959f));g.drawText(hz>=1000?juce::String(hz/1000,0)+"k":juce::String(hz,0),int(xFor(hz))-20,int(plot.getBottom())-22,40,18,juce::Justification::centred);
+        g.setColour(juce::Colour(0xff6c8091));
+        g.drawText(hz>=1000?juce::String(hz/1000,0)+"k":juce::String(hz,0),int(xFor(hz))-20,int(plot.getBottom())-19,40,16,juce::Justification::centred);
     }
-    int step=displayRange==30?6:displayRange==12?3:1;
-    for(int db=-int(displayRange);db<=int(displayRange);db+=step){float y=yFor(db);g.setColour(juce::Colour(db==0?0xff49605c:0xff2a3b3e));g.drawHorizontalLine(int(y),plot.getX(),plot.getRight());g.setColour(juce::Colour(0xffa1b5b1));if(db<int(displayRange))g.drawText((db>0?"+":"")+juce::String(db),int(plot.getRight())-61,int(y)-9,30,18,juce::Justification::right);}
+
+    // Horizontal dB grid + Right-hand EQ dB Scale (amber/gold)
+    const juce::String minusSign=juce::String::fromUTF8("\xe2\x88\x92");
+    const int step=displayRange==30?6:displayRange==12?3:displayRange==6?2:1;
+    g.setFont(juce::FontOptions(11.5f,juce::Font::bold));
+    for(int db=-int(displayRange);db<=int(displayRange);db+=step){
+        float y=yFor(db);
+        g.setColour(juce::Colour(db==0?0xff2f4d63:0xff162430));
+        g.drawHorizontalLine(int(y),plot.getX(),plot.getRight());
+        if(db<int(displayRange)){
+            const juce::String label=db>0?("+"+juce::String(db)):db<0?(minusSign+juce::String(-db)):juce::String("0");
+            g.setColour(juce::Colour(db==0?0xffffdf7a:0xfff5c242));
+            g.drawText(label,int(plot.getRight())+6,int(y)-9,34,18,juce::Justification::right);
+        }
+    }
+
+    // Right-hand Analyzer / Meter dBFS scale (0 .. -90)
+    g.setFont(juce::FontOptions(10.5f));
+    for(int db=0;db>=-90;db-=10){
+        float y=plot.getBottom()-float(db+100)*plot.getHeight()/100.0f;
+        const juce::String label=db==0?juce::String("0"):(minusSign+juce::String(-db));
+        g.setColour(juce::Colour(db==0?0xff9db0c0:0xff6d7f8f));
+        g.drawText(label,int(plot.getRight())+44,int(y)-8,30,16,juce::Justification::right);
+    }
+
+    // Holographic spectrum analyzer
     if(analyzerMode!=0||showSidechain){juce::Graphics::ScopedSaveState saved(g);g.reduceClipRegion(plot.toNearestInt());
         for(int stage=0;stage<3;++stage){if((stage==2&&!showSidechain)||(stage<2&&analyzerMode==0)||(stage==0&&analyzerMode==2)||(stage==1&&analyzerMode==1))continue;const auto& display=stage==2?sidechainDisplay:spectrum;juce::Path trace;float previousX=0,previousY=0;
             for(int i=0;i<=600;++i){float x=plot.getX()+plot.getWidth()*float(i)/600;double bin=hzFor(x)*SpectrumTap::size/display.rate;const float rawDb=bin>SpectrumDisplay::bins-1?-100:display.displayDb(stage==2?0:stage,bin);float db=SpectrumDisplay::tiltedDb(rawDb,hzFor(x),analyzerTilt);const double edge=juce::jlimit(0.0,1.0,(double(SpectrumDisplay::bins-1)-bin)/4.0);db=float(10*std::log10(1e-10+std::max(0.0,std::pow(10.0,double(db)/10)-1e-10)*edge*edge));float y=plot.getBottom()-juce::jlimit(0.0f,1.0f,(db+100)/100)*plot.getHeight();if(i==0)trace.startNewSubPath(x,y);else trace.quadraticTo(previousX,previousY,(previousX+x)*.5f,(previousY+y)*.5f);previousX=x;previousY=y;if(i==600)trace.lineTo(x,y);}
-            auto fill=trace;fill.lineTo(plot.getRight(),plot.getBottom());fill.lineTo(plot.getX(),plot.getBottom());fill.closeSubPath();g.setColour(juce::Colour(stage==0?0xff9b949d:0xffd7d2d9).withAlpha(stage==0?.08f:.12f));g.fillPath(fill);g.setColour(juce::Colour(stage==2?0xff63b9e3:stage==0?0xff8c858f:0xffbcb6c3).withAlpha(.75f));g.strokePath(trace,juce::PathStrokeType(1));
+            auto fill=trace;fill.lineTo(plot.getRight(),plot.getBottom());fill.lineTo(plot.getX(),plot.getBottom());fill.closeSubPath();
+            juce::ColourGradient specGrad(juce::Colour(stage==2?0xff38bdf8:stage==0?0xff3b82f6:0xff22e4ff).withAlpha(stage==0?0.10f:0.16f),0,plot.getY(),juce::Colour(0x000a1420),0,plot.getBottom(),false);
+            g.setGradientFill(specGrad);g.fillPath(fill);
+            g.setColour(juce::Colour(stage==2?0xff60a5fa:stage==0?0xff5b7d99:0xff4be7ff).withAlpha(stage==0?0.48f:0.75f));
+            g.strokePath(trace,juce::PathStrokeType(stage==1?1.25f:1.0f));
         }
     }
-    if(analyzerMode!=0){g.setFont(juce::FontOptions(10));g.setColour(juce::Colour(0xff8c8692));for(int db=-10;db>=-90;db-=10){float y=plot.getBottom()-(db+100)*plot.getHeight()/100;g.drawText(juce::String(db),int(plot.getRight())-27,int(y)-8,24,16,juce::Justification::right);}}
+
+    // EQ Response Curves
     const double sr=eqProcessor.getSampleRate()>0?eqProcessor.getSampleRate():48000;
     std::array<distillazione::SectionBank,24> banks,dynamicBanks;
     int count=0;
@@ -285,74 +495,200 @@ void EQEditor::paint(juce::Graphics& g) {
     const bool soloActive=soloBand>=0&&eqProcessor.settings(soloBand).enabled;
     {juce::Graphics::ScopedSaveState saved(g);g.reduceClipRegion(plot.toNearestInt());
         for(int band=0;band<24;++band)if(eqProcessor.settings(band).enabled){
-            g.setColour(soloActive?juce::Colour(0xff758185).withAlpha(.13f):colour(band).withAlpha(.45f));
+            g.setColour(soloActive?juce::Colour(0xff526575).withAlpha(.16f):colour(band).withAlpha(.42f));
             if(!soloActive||band!=soloBand)g.strokePath(bandPaths[size_t(band)],juce::PathStrokeType(1.1f));
         }
         auto highlighted=soloActive?bandPaths[size_t(soloBand)]:individual;
         auto fill=highlighted;fill.lineTo(plot.getRight(),yFor(0));fill.lineTo(plot.getX(),yFor(0));fill.closeSubPath();
-        if(soloActive){const auto p=eqProcessor.settings(soloBand);const double displayedGain=p.gain+(p.mode==1?eqProcessor.dynamicAmount[size_t(soloBand)].load():0);const float apex=juce::jlimit(plot.getY(),plot.getBottom(),yFor(std::abs(displayedGain)>.05?displayedGain:1));
-            juce::ColourGradient gradient(juce::Colour(0xffdfff00).withAlpha(.52f),xFor(p.frequency),apex,juce::Colour(0xffdfff00).withAlpha(.015f),xFor(p.frequency),yFor(0),false);g.setGradientFill(gradient);g.fillPath(fill);
-            g.setColour(juce::Colour(0xff758185).withAlpha(.28f));g.strokePath(total,juce::PathStrokeType(1.4f));
-            g.setColour(juce::Colour(0xffdfff00));g.strokePath(highlighted,juce::PathStrokeType(2.2f));
-        }else{g.setColour(colour(selected).withAlpha(.16f));g.fillPath(fill);g.setColour(colour(selected).withAlpha(.6f));g.strokePath(individual,juce::PathStrokeType(1.2f));g.setColour(juce::Colour(0xffdfff00));g.strokePath(total,juce::PathStrokeType(2));}
-    }
-    for(int i=0;i<24;++i){auto p=eqProcessor.settings(i);if(!p.enabled)continue;const bool muted=soloActive&&i!=soloBand;auto point=juce::Point<float>{xFor(p.frequency),juce::jlimit(plot.getY()+8,plot.getBottom()-26,yFor(p.gain))};g.setColour(colour(i).withAlpha(.12f));if(i==selected&&!muted)g.fillEllipse(point.x-13,point.y-13,26,26);g.setColour(muted?juce::Colour(0xff758185).withAlpha(.2f):colour(i));g.fillEllipse(point.x-5,point.y-5,10,10);g.setColour(juce::Colour(0xffe9e3ed).withAlpha(muted?.15f:1.0f));g.drawEllipse(point.x-5,point.y-5,10,10,1);}
-    const auto selectedBand=eqProcessor.settings(selected);
-    const float meterTop=98,meterHeight=plot.getHeight()-26;
-    for(int channel=0;channel<2;++channel){const float level=meterDisplayDb[size_t(channel)],mx=float(getWidth()-47+channel*17);g.setColour(juce::Colour(0xff30393c));g.fillRoundedRectangle(mx,meterTop,7,meterHeight,3);const float height=meterHeight*juce::jlimit(0.0f,1.0f,(level+72)/72);g.setColour(juce::Colour(level>0?0xffef886f:channel==0?0xffdfff00:0xff64c9ce));g.fillRect(mx,meterTop+meterHeight-height,7.0f,height);g.setFont(juce::FontOptions(10));g.setColour(juce::Colour(0xffa7b3b1));g.drawText(channel==0?"L":"R",int(mx)-4,76,16,16,juce::Justification::centred);}
-    g.setColour(juce::Colour(0xff171d21));g.fillRect(0,getHeight()-90,getWidth(),90);
-    g.setColour(juce::Colour(0xff859a99));g.setFont(juce::FontOptions(10));g.drawText(juce::String(count)+" / 24 BANDS | "+juce::String(eqProcessor.getLatencySamples())+" samples",24,getHeight()-27,146,20,juce::Justification::left);
-    g.setColour(juce::Colour(0xffa3b0aa));for(int i=0;i<3;++i){const float d=5.0f+float(i*5);g.drawLine(float(getWidth())-d-4,float(getHeight())-4,float(getWidth())-4,float(getHeight())-d-4,1.2f);}
-    if(analyzerFrozen){g.setColour(juce::Colour(0xffdfff00));g.drawText("SPECTRUM HELD",int(plot.getX())+12,int(plot.getY())+14,160,20,juce::Justification::left);}
-    if(eqProcessor.auditionBand()>=0){g.setColour(juce::Colour(0xffdfff00));g.drawText("SOLO · BAND "+juce::String(eqProcessor.auditionBand()+1),int(plot.getX())+12,int(plot.getY())+36,180,22,juce::Justification::left);}
-    if(selectedBand.enabled&&!panelDismissed){
-        g.setColour(juce::Colours::black.withAlpha(.35f));g.fillRoundedRectangle(panel.translated(0,4).expanded(3),12);
-        g.setColour(juce::Colour(0xff202529));g.fillRoundedRectangle(panel,10);g.setColour(juce::Colour(0xff505b5c));g.drawRoundedRectangle(panel,10,1);
-        g.setColour(juce::Colour(0xffdfff00));g.fillRoundedRectangle(panel.getX()+16,panel.getY()+16,4,16,2);
-        g.setColour(juce::Colour(0xffd7dfdd));g.setFont(juce::FontOptions(12));g.drawText("BAND "+juce::String(selected+1),int(panel.getX())+25,int(panel.getY())+8,90,24,juce::Justification::left);
-        const float nx=xFor(selectedBand.frequency),ny=juce::jlimit(plot.getY()+8,plot.getBottom()-26,yFor(selectedBand.gain));
-        juce::Rectangle<float> tip(juce::jlimit(plot.getX(),plot.getRight()-126,nx-63),juce::jlimit(plot.getY(),plot.getBottom()-48,ny-58),126,42);
-        if(!tip.intersects(panel)){g.setColour(juce::Colour(0xff202529));g.fillRoundedRectangle(tip,6);g.setColour(juce::Colour(0xffdce4df));g.drawText(juce::String(selectedBand.frequency,1)+" Hz",tip.toNearestInt().removeFromTop(21),juce::Justification::centred);g.drawText(juce::String(selectedBand.gain,2)+" dB",tip.toNearestInt().withTrimmedTop(21),juce::Justification::centred);}
+        if(soloActive){
+            const auto p=eqProcessor.settings(soloBand);const double displayedGain=p.gain+(p.mode==1?eqProcessor.dynamicAmount[size_t(soloBand)].load():0);const float apex=juce::jlimit(plot.getY(),plot.getBottom(),yFor(std::abs(displayedGain)>.05?displayedGain:1));
+            juce::ColourGradient gradient(juce::Colour(0xfff5c842).withAlpha(.45f),xFor(p.frequency),apex,juce::Colour(0xfff5c842).withAlpha(.015f),xFor(p.frequency),yFor(0),false);g.setGradientFill(gradient);g.fillPath(fill);
+            g.setColour(juce::Colour(0xff6b7f90).withAlpha(.28f));g.strokePath(total,juce::PathStrokeType(1.4f));
+            g.setColour(juce::Colour(0x44f5c842));g.strokePath(highlighted,juce::PathStrokeType(6.0f));
+            g.setColour(juce::Colour(0xffffdf6e));g.strokePath(highlighted,juce::PathStrokeType(2.3f));
+        }else{
+            const auto selCol=colour(selected);
+            juce::ColourGradient selFill(selCol.withAlpha(.26f),plot.getCentreX(),plot.getY(),selCol.withAlpha(.04f),plot.getCentreX(),yFor(0),false);
+            g.setGradientFill(selFill);g.fillPath(fill);
+            g.setColour(selCol.withAlpha(.65f));g.strokePath(individual,juce::PathStrokeType(1.3f));
+            // Multi-pass luminous glow on total wet EQ curve
+            g.setColour(juce::Colour(0x28f5c842));g.strokePath(total,juce::PathStrokeType(6.5f,juce::PathStrokeType::curved,juce::PathStrokeType::rounded));
+            g.setColour(juce::Colour(0x55ffe066));g.strokePath(total,juce::PathStrokeType(3.4f,juce::PathStrokeType::curved,juce::PathStrokeType::rounded));
+            g.setColour(juce::Colour(0xffffdf6e));g.strokePath(total,juce::PathStrokeType(2.0f,juce::PathStrokeType::curved,juce::PathStrokeType::rounded));
+        }
     }
 
+    // Band nodes with holographic glow + subtle crosshair while dragging
+    for(int i=0;i<24;++i){
+        auto p=eqProcessor.settings(i);if(!p.enabled)continue;
+        const bool muted=soloActive&&i!=soloBand;
+        auto point=juce::Point<float>{xFor(p.frequency),juce::jlimit(plot.getY()+8,plot.getBottom()-24,yFor(p.gain))};
+        const auto c=colour(i);
+        if(i==selected&&!muted){
+            if(dragging){
+                g.setColour(c.withAlpha(0.22f));
+                g.drawVerticalLine(int(point.x),plot.getY(),plot.getBottom());
+                g.drawHorizontalLine(int(point.y),plot.getX(),plot.getRight());
+            }
+            g.setColour(c.withAlpha(.16f));g.fillEllipse(point.x-15,point.y-15,30,30);
+            g.setColour(c.withAlpha(.42f));g.drawEllipse(point.x-10,point.y-10,20,20,1.1f);
+        }
+        g.setColour(muted?juce::Colour(0xff5a6d7e).withAlpha(.22f):c);g.fillEllipse(point.x-5.5f,point.y-5.5f,11,11);
+        g.setColour(juce::Colour(0xffffffff).withAlpha(muted?.15f:0.95f));g.drawEllipse(point.x-5.5f,point.y-5.5f,11,11,1.2f);
+    }
+
+    // Futuristic L/R Output Meters aligned with 0 .. -100 dBFS scale
+    const float meterTop=plot.getY(),meterHeight=plot.getHeight();
+    for(int channel=0;channel<2;++channel){
+        const float level=meterDisplayDb[size_t(channel)],peakHold=meterPeakHoldDb[size_t(channel)];
+        const float mx=float(getWidth()-28+channel*10);
+        g.setColour(juce::Colour(0xff111a24));g.fillRoundedRectangle(mx,meterTop,7,meterHeight,3.5f);
+        g.setColour(juce::Colour(0xff1e2f3f));g.drawRoundedRectangle(mx,meterTop,7,meterHeight,3.5f,0.7f);
+        const float norm=juce::jlimit(0.0f,1.0f,(level+100.0f)/100.0f);
+        const float height=meterHeight*norm;
+        if(height>0.5f){
+            juce::ColourGradient mg(juce::Colour(0xffff4d5a),mx,meterTop,juce::Colour(0xff18b88c),mx,meterTop+meterHeight,false);
+            mg.addColour(0.10,juce::Colour(0xfff5c242));
+            mg.addColour(0.35,juce::Colour(0xff7ce832));
+            g.setGradientFill(mg);
+            g.fillRoundedRectangle(mx+0.5f,meterTop+meterHeight-height,6.0f,height,2.5f);
+        }
+        if(peakHold>-99.0f){
+            const float phNorm=juce::jlimit(0.0f,1.0f,(peakHold+100.0f)/100.0f);
+            const float py=meterTop+meterHeight*(1.0f-phNorm);
+            g.setColour(juce::Colour(peakHold>0.0f?0xffff5c70:0xff9cf542));
+            g.fillRect(mx+0.5f,py-1.0f,6.0f,2.0f);
+        }
+        g.setFont(juce::FontOptions(9.5f,juce::Font::bold));g.setColour(juce::Colour(0xff7d93a5));
+        g.drawText(channel==0?"L":"R",int(mx)-2,int(meterTop)-18,11,14,juce::Justification::centred);
+    }
+
+    // Bottom futuristic console dock
+    g.setColour(juce::Colour(0xff0b1118));g.fillRect(0,getHeight()-88,getWidth(),88);
+    g.setColour(juce::Colour(0x3322e4ff));g.drawHorizontalLine(getHeight()-88,0,float(getWidth()));
+    g.setColour(juce::Colour(0xff6b8294));g.setFont(juce::FontOptions(10.0f));
+    g.drawText(juce::String(count)+" / 24 BANDS  ·  "+juce::String(eqProcessor.getLatencySamples())+" samples",24,getHeight()-26,180,18,juce::Justification::left);
+    g.setColour(juce::Colour(0xff4c6578));
+    for(int i=0;i<3;++i){const float d=5.0f+float(i*5);g.drawLine(float(getWidth())-d-4,float(getHeight())-4,float(getWidth())-4,float(getHeight())-d-4,1.2f);}
+
+    if(analyzerFrozen){
+        g.setColour(juce::Colour(0xcc0d1722));g.fillRoundedRectangle(plot.getX()+10,plot.getY()+10,126,22,5);
+        g.setColour(juce::Colour(0xff22e4ff));g.drawRoundedRectangle(plot.getX()+10,plot.getY()+10,126,22,5,0.8f);
+        g.setFont(juce::FontOptions(10.0f,juce::Font::bold));g.drawText("SPECTRUM HELD",int(plot.getX())+10,int(plot.getY())+10,126,22,juce::Justification::centred);
+    }
+    if(eqProcessor.auditionBand()>=0){
+        const float sy=plot.getY()+(analyzerFrozen?38.0f:10.0f);
+        g.setColour(juce::Colour(0xcc1f1a0d));g.fillRoundedRectangle(plot.getX()+10,sy,126,22,5);
+        g.setColour(juce::Colour(0xfff5c242));g.drawRoundedRectangle(plot.getX()+10,sy,126,22,5,0.9f);
+        g.setFont(juce::FontOptions(10.0f,juce::Font::bold));g.drawText("SOLO · BAND "+juce::String(eqProcessor.auditionBand()+1),int(plot.getX())+10,int(sy),126,22,juce::Justification::centred);
+    }
+
+    // Floating futuristic Liquid Glass Band Inspector
+    const auto selectedBand=eqProcessor.settings(selected);
+    if(selectedBand.enabled&&!panelDismissed){
+        g.setColour(juce::Colours::black.withAlpha(.42f));g.fillRoundedRectangle(panel.translated(0,6).expanded(3.5f),14.5f);
+        // Translucent smoked glass body so grid & spectrum subtly shine through
+        juce::ColourGradient cardBg(juce::Colour(0xc6152230),panel.getX(),panel.getY(),juce::Colour(0xd2091018),panel.getX(),panel.getBottom(),false);
+        g.setGradientFill(cardBg);g.fillRoundedRectangle(panel,13);
+        // Liquid specular top sheen + subtle diagonal refraction
+        {juce::Graphics::ScopedSaveState saved(g);juce::Path clip;clip.addRoundedRectangle(panel,13);g.reduceClipRegion(clip);
+            juce::ColourGradient topSheen(juce::Colour(0x24ffffff),panel.getX(),panel.getY(),juce::Colour(0x00ffffff),panel.getX(),panel.getY()+panel.getHeight()*0.44f,false);
+            g.setGradientFill(topSheen);g.fillRect(panel.withHeight(panel.getHeight()*0.44f));
+            juce::ColourGradient diagGlow(colour(selected).withAlpha(0.11f),panel.getX(),panel.getY(),juce::Colour(0x0022e4ff),panel.getX()+panel.getWidth()*0.55f,panel.getBottom(),false);
+            g.setGradientFill(diagGlow);g.fillRect(panel);
+            // Soft bottom internal bounce light
+            juce::ColourGradient bottomBounce(juce::Colour(0x0022e4ff),panel.getX(),panel.getBottom()-24,juce::Colour(0x1422e4ff),panel.getX(),panel.getBottom(),false);
+            g.setGradientFill(bottomBounce);g.fillRect(panel.withTrimmedTop(panel.getHeight()-24));
+        }
+        // Prismatic specular rim border (bright top-left catchlight fading to accent tint)
+        juce::ColourGradient rimGrad(juce::Colour(0x66ffffff),panel.getX(),panel.getY(),colour(selected).withAlpha(0.38f),panel.getRight(),panel.getBottom(),false);
+        g.setGradientFill(rimGrad);g.drawRoundedRectangle(panel,13,1.15f);
+        g.setColour(juce::Colour(0x1affffff));g.drawRoundedRectangle(panel.reduced(1.2f),11.8f,0.65f);
+        // Header neon bar & title
+        g.setColour(colour(selected).withAlpha(0.38f));g.fillRoundedRectangle(panel.getX()+11,panel.getY()+11,6,18,3);
+        g.setColour(colour(selected));g.fillRoundedRectangle(panel.getX()+12,panel.getY()+12,4,16,2);
+        g.setColour(juce::Colour(0xffeaf6ff));g.setFont(juce::FontOptions(12.0f,juce::Font::bold));
+        g.drawText("BAND "+juce::String(selected+1),int(panel.getX())+22,int(panel.getY())+8,90,24,juce::Justification::left);
+        // Subtle Liquid Glass HUD readout chip near active dot
+        const float nx=xFor(selectedBand.frequency),ny=juce::jlimit(plot.getY()+8,plot.getBottom()-24,yFor(selectedBand.gain));
+        juce::Rectangle<float> tip(juce::jlimit(plot.getX()+4,plot.getRight()-118,nx-57),juce::jlimit(plot.getY()+4,plot.getBottom()-46,ny-52),114,38);
+        if(!tip.intersects(panel)){
+            juce::ColourGradient tipBg(juce::Colour(0xc8162331),tip.getX(),tip.getY(),juce::Colour(0xd40a1119),tip.getX(),tip.getBottom(),false);
+            g.setGradientFill(tipBg);g.fillRoundedRectangle(tip,8);
+            {juce::Graphics::ScopedSaveState s(g);juce::Path tc;tc.addRoundedRectangle(tip,8);g.reduceClipRegion(tc);
+                juce::ColourGradient ts(juce::Colour(0x20ffffff),tip.getX(),tip.getY(),juce::Colour(0x00ffffff),tip.getX(),tip.getCentreY(),false);
+                g.setGradientFill(ts);g.fillRect(tip.withHeight(tip.getHeight()*0.5f));
+            }
+            juce::ColourGradient tipRim(juce::Colour(0x55ffffff),tip.getX(),tip.getY(),colour(selected).withAlpha(0.55f),tip.getRight(),tip.getBottom(),false);
+            g.setGradientFill(tipRim);g.drawRoundedRectangle(tip,8,0.95f);
+            g.setFont(juce::FontOptions(11.0f,juce::Font::bold));g.setColour(juce::Colour(0xffeaf6ff));
+            const juce::String freqTxt=selectedBand.frequency>=1000.0?juce::String(selectedBand.frequency/1000.0,2)+" kHz":juce::String(selectedBand.frequency,1)+" Hz";
+            g.drawText(freqTxt,tip.toNearestInt().removeFromTop(19),juce::Justification::centred);
+            g.setFont(juce::FontOptions(10.5f));g.setColour(colour(selected));
+            const juce::String gainTxt=(selectedBand.gain>=0?"+":"")+juce::String(selectedBand.gain,2)+" dB";
+            g.drawText(gainTxt,tip.toNearestInt().withTrimmedTop(19),juce::Justification::centred);
+        }
+    }
 }
 
 void EQEditor::resized() {
-    const int w=getWidth(),h=getHeight();eqProcessor.editorWidth.store(w);eqProcessor.editorHeight.store(h);plot={24,84,float(w-96),float(h-194)};
-    undo.setBounds(218,18,30,28);redo.setBounds(253,18,30,28);presetMenu.setBounds(300,18,std::max(140,w-800),30);ab.setBounds(w-490,18,65,28);copyAB.setBounds(w-420,18,50,28);help.setBounds(w-340,18,60,28);resizeEditor.setBounds(w-265,18,50,28);
+    const int w=getWidth(),h=getHeight();eqProcessor.editorWidth.store(w);eqProcessor.editorHeight.store(h);
+    // Reserve clean right margin for EQ dB scale + Analyzer dBFS scale + L/R output meters
+    plot={24,82,float(w-134),float(h-184)};
+
+    // Top bar controls
+    undo.setBounds(214,14,30,28);redo.setBounds(248,14,30,28);
+    presetMenu.setBounds(290,14,std::max(140,w-780),28);
+    ab.setBounds(w-470,14,62,28);copyAB.setBounds(w-402,14,50,28);
+    help.setBounds(w-340,14,56,28);resizeEditor.setBounds(w-278,14,54,28);
+
+    // Right-hand dB range selector pill (aligned directly over amber EQ dB scale)
+    range.setBounds(int(plot.getRight())-4,int(plot.getY())-28,52,22);
+
+    // Smart Left / Right opposite-side docking for Band Inspector (never covers the band node)
     const auto p=eqProcessor.settings(selected);const bool visible=p.enabled&&!panelDismissed;
-    const float panelScale=juce::jlimit(.70f,1.0f,std::min(float(w)/1280,float(h)/840));
-    const float pw=620*panelScale,ph=(expanded?304:254)*panelScale;
+    const float panelScale=juce::jlimit(0.68f,0.92f,std::min(float(w)/1280.0f,float(h)/840.0f));
+    const float baseW=460.0f,baseH=expanded?280.0f:224.0f;
+    const float pw=baseW*panelScale,ph=baseH*panelScale;
     if(!knobDragging||panel.isEmpty()){
-        float px=juce::jlimit(plot.getX()+8,plot.getRight()-pw-8,xFor(p.frequency)-pw*.5f);
-        const float nodeY=yFor(p.gain);
-        if(panelBelow&&nodeY>plot.getBottom()-ph-8)panelBelow=false;
-        else if(!panelBelow&&nodeY<plot.getY()+ph+8)panelBelow=true;
-        float desiredY=panelBelow?nodeY+24:nodeY-ph-24;
-        if(eqProcessor.auditionBand()==selected)desiredY=p.gain>=0?std::max(desiredY,yFor(0)+24):std::min(desiredY,yFor(0)-ph-24);
-        float py=juce::jlimit(plot.getY()+8,plot.getBottom()-ph-8,desiredY);
+        const float nodeX=xFor(p.frequency);
+        const float splitX=xFor(1000.0)+1.0f;
+        const bool dockRight=(nodeX<=splitX);
+        float px=dockRight?(plot.getRight()-pw-10.0f):(plot.getX()+10.0f);
+        px=juce::jlimit(plot.getX()+6.0f,plot.getRight()-pw-6.0f,px);
+        float py=juce::jlimit(plot.getY()+8.0f,plot.getBottom()-ph-24.0f,plot.getBottom()-ph-24.0f);
         panel={px,py,pw,ph};panelFrequency=float(p.frequency);panelBand=selected;
     }
     const int x=int(panel.getX()),y=int(panel.getY());
-    solo.setBounds(x+443,y+10,100,28);closePanel.setBounds(x+574,y+10,30,28);
-    frequencyLabel.setBounds(x+20,y+46,150,20);gainLabel.setBounds(x+180,y+46,150,20);qLabel.setBounds(x+340,y+46,150,20);
-    frequency.setBounds(x+20,y+66,150,125);gain.setBounds(x+180,y+66,150,125);q.setBounds(x+340,y+66,150,125);
-    shapeButton.setBounds(x+16,y+210,140,30);slopeButton.setBounds(x+165,y+210,106,30);placement.setBounds(x+280,y+210,125,30);modeSettings.setBounds(x+414,y+210,126,30);remove.setBounds(x+550,y+210,54,30);remove.setButtonText("Del");
+    solo.setBounds(x+326,y+8,86,26);closePanel.setBounds(x+420,y+8,28,26);
+    if(expanded){
+        frequencyLabel.setBounds(x+12,y+40,106,18);gainLabel.setBounds(x+124,y+40,106,18);qLabel.setBounds(x+236,y+40,106,18);
+        frequency.setBounds(x+12,y+58,106,114);gain.setBounds(x+124,y+58,106,114);q.setBounds(x+236,y+58,106,114);
+        thresholdLabel.setBounds(x+350,y+40,98,18);
+        threshold.getProperties().set("threshold",true);threshold.setSliderStyle(juce::Slider::LinearVertical);threshold.setTextBoxStyle(juce::Slider::TextBoxBelow,false,94,20);threshold.setBounds(x+350,y+58,98,114);
+    }else{
+        frequencyLabel.setBounds(x+14,y+40,136,18);gainLabel.setBounds(x+162,y+40,136,18);qLabel.setBounds(x+310,y+40,136,18);
+        frequency.setBounds(x+14,y+58,136,116);gain.setBounds(x+162,y+58,136,116);q.setBounds(x+310,y+58,136,116);
+    }
+    shapeButton.setBounds(x+12,y+184,112,28);slopeButton.setBounds(x+130,y+184,88,28);placement.setBounds(x+224,y+184,92,28);modeSettings.setBounds(x+322,y+184,78,28);remove.setBounds(x+406,y+184,42,28);remove.setButtonText("Del");
     modeSettings.getProperties().remove("icon");modeSettings.setButtonText(juce::StringArray{"Static","Dynamic","Spectral"}[p.mode]);
-    threshold.getProperties().set("threshold",true);threshold.setSliderStyle(juce::Slider::LinearVertical);threshold.setTextBoxStyle(juce::Slider::TextBoxBelow,false,100,22);threshold.setBounds(x+503,y+70,100,130);thresholdLabel.setBounds(x+503,y+46,100,20);
-    rangeLabel.setBounds(x+16,y+252,135,18);dynamicRange.getProperties().set("rangeRing",false);dynamicRange.setSliderStyle(juce::Slider::LinearHorizontal);dynamicRange.setTextBoxStyle(juce::Slider::TextBoxRight,false,56,20);dynamicRange.setBounds(x+16,y+275,135,24);
-    attackLabel.setBounds(x+163,y+252,114,18);attack.setSliderStyle(juce::Slider::LinearHorizontal);attack.setTextBoxStyle(juce::Slider::TextBoxRight,false,56,20);attack.setBounds(x+163,y+275,114,24);
-    releaseLabel.setBounds(x+289,y+252,114,18);release.setSliderStyle(juce::Slider::LinearHorizontal);release.setTextBoxStyle(juce::Slider::TextBoxRight,false,56,20);release.setBounds(x+289,y+275,114,24);triggerButton.setBounds(x+417,y+264,85,28);externalKey.setBounds(x+512,y+264,92,28);
-    processingButton.setBounds(24,h-73,118,26);resolutionButton.setBounds(150,h-73,92,26);analyzer.setBounds(250,h-73,140,26);freeze.setBounds(398,h-73,60,26);range.setBounds(466,h-73,60,26);
+    rangeLabel.setBounds(x+12,y+222,102,16);dynamicRange.getProperties().set("rangeRing",false);dynamicRange.setSliderStyle(juce::Slider::LinearHorizontal);dynamicRange.setTextBoxStyle(juce::Slider::TextBoxRight,false,52,20);dynamicRange.setBounds(x+12,y+242,102,24);
+    attackLabel.setBounds(x+118,y+222,100,16);attack.setSliderStyle(juce::Slider::LinearHorizontal);attack.setTextBoxStyle(juce::Slider::TextBoxRight,false,54,20);attack.setBounds(x+118,y+242,100,24);
+    releaseLabel.setBounds(x+222,y+222,100,16);release.setSliderStyle(juce::Slider::LinearHorizontal);release.setTextBoxStyle(juce::Slider::TextBoxRight,false,54,20);release.setBounds(x+222,y+242,100,24);
+    triggerButton.setBounds(x+328,y+238,58,28);externalKey.setBounds(x+392,y+238,56,28);
+
+    // Bottom console dock controls
+    processingButton.setBounds(24,h-72,112,26);resolutionButton.setBounds(142,h-72,90,26);
+    analyzer.setBounds(238,h-72,144,26);freeze.setBounds(388,h-72,66,26);
     for(auto* label:{&outputPanLabel,&wetMixLabel,&outputGainLabel})label->setJustificationType(juce::Justification::centred);
-    outputPanLabel.setBounds(w-322,h-88,92,18);outputBalance.setBounds(w-322,h-70,92,68);
-    wetMixLabel.setBounds(w-220,h-88,92,18);wetMix.setBounds(w-220,h-70,92,68);
-    outputGainLabel.setBounds(w-118,h-88,92,18);outputKnob.setBounds(w-118,h-70,92,68);
-    outputBalanceMode.setBounds(300,h-26,120,22);outputInvert.setBounds(430,h-26,90,22);
-    midSidePanel.setBounds(w-344,h-298,318,200);midSideTitle.setBounds(15,6,288,25);
+    outputPanLabel.setBounds(w-322,h-84,92,16);outputBalance.setBounds(w-322,h-68,92,64);
+    wetMixLabel.setBounds(w-220,h-84,92,16);wetMix.setBounds(w-220,h-68,92,64);
+    outputGainLabel.setBounds(w-118,h-84,92,16);outputKnob.setBounds(w-118,h-68,92,64);
+    add.setBounds(214,h-30,104,24);add.setButtonText("+ Add band");
+    outputBalanceMode.setBounds(326,h-30,116,24);outputInvert.setBounds(450,h-30,104,24);
+    midSidePanel.setBounds(w-344,h-296,318,200);midSideTitle.setBounds(15,6,288,25);
     midLabel.setBounds(18,35,130,20);sideLabel.setBounds(170,35,130,20);midOutput.setBounds(18,56,130,105);sideOutput.setBounds(170,56,130,105);midInvert.setBounds(23,168,130,26);sideInvert.setBounds(175,168,130,26);
     midSidePanel.toFront(false);
-    add.setBounds(180,h-26,105,22);add.setButtonText("+ Add band");
     for(auto& card:bandCards)if(card)card->setVisible(false);
     for(auto* c:std::initializer_list<juce::Component*>{&previousPage,&nextPage,&pageLabel,&bandPicker,&active,&shape,&slope,&mode,&shapeLabel,&slopeLabel,&outputLabel,&save,&load,&reset,&bypass,&nodeActions,&output,&outputPanel})c->setVisible(false);
     for(auto* c:std::initializer_list<juce::Component*>{&solo,&closePanel,&frequency,&gain,&q,&frequencyLabel,&gainLabel,&qLabel,&shapeButton,&slopeButton,&remove,&modeSettings,&placement})c->setVisible(visible);
@@ -416,4 +752,20 @@ void EQEditor::restoreState(const std::vector<float>& state){auto& parameters=eq
 void EQEditor::commitHistory(){auto state=captureState();if(state==history[size_t(historyPosition)])return;history.resize(size_t(historyPosition+1));history.push_back(std::move(state));if(history.size()>100)history.erase(history.begin());historyPosition=int(history.size())-1;}
 void EQEditor::showPresetMenu(){juce::PopupMenu menu;menu.setLookAndFeel(&menuStyle());menu.addItem(1,"Save preset...");menu.addItem(2,"Load preset...");menu.addSeparator();menu.addItem(3,"Default Setting");menu.addItem(4,"Bypass",true,bypass.getToggleState());auto safe=juce::Component::SafePointer<EQEditor>(this);menu.showMenuAsync(juce::PopupMenu::Options().withParentComponent(this).withTargetComponent(&presetMenu).withMinimumWidth(220),[safe](int result){if(!safe)return;safe->commitHistory();if(result==1)safe->preset(true);if(result==2)safe->preset(false);if(result==3)safe->reset.onClick();if(result==4)safe->eqProcessor.setValue("bypass",safe->bypass.getToggleState()?0:1);safe->commitHistory();});}
 
-void EQEditor::updateMeters(){const double now=juce::Time::getMillisecondCounterHiRes();const float seconds=float(lastMeterTime>0?juce::jlimit(.001,.1,(now-lastMeterTime)/1000):1.0/60);lastMeterTime=now;for(int ch=0;ch<2;++ch){const float db=juce::Decibels::gainToDecibels(eqProcessor.meterPeak[size_t(ch)].exchange(0),-100.0f);meterDisplayDb[size_t(ch)]=std::max(db,std::max(-100.0f,meterDisplayDb[size_t(ch)]-25*seconds));}}
+void EQEditor::updateMeters(){
+    const double now=juce::Time::getMillisecondCounterHiRes();
+    const float seconds=float(lastMeterTime>0?juce::jlimit(.001,.1,(now-lastMeterTime)/1000):1.0/60);
+    lastMeterTime=now;
+    for(int ch=0;ch<2;++ch){
+        const float db=juce::Decibels::gainToDecibels(eqProcessor.meterPeak[size_t(ch)].exchange(0),-100.0f);
+        meterDisplayDb[size_t(ch)]=std::max(db,std::max(-100.0f,meterDisplayDb[size_t(ch)]-25*seconds));
+        if(db>=meterPeakHoldDb[size_t(ch)]){
+            meterPeakHoldDb[size_t(ch)]=db;
+            meterPeakHoldTimer[size_t(ch)]=1.2f;
+        }else if(meterPeakHoldTimer[size_t(ch)]>0.0f){
+            meterPeakHoldTimer[size_t(ch)]=std::max(0.0f,meterPeakHoldTimer[size_t(ch)]-seconds);
+        }else{
+            meterPeakHoldDb[size_t(ch)]=std::max(-100.0f,meterPeakHoldDb[size_t(ch)]-18.0f*seconds);
+        }
+    }
+}

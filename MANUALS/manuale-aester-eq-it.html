@@ -135,14 +135,14 @@
   <tr><td class="k">Meter L / R</td><td>A destra del grafico, picco per canale.</td></tr>
   <tr><td class="k">Pannello flottante</td><td>Compare quando selezioni una banda: FREQ, GAIN, Q, SOLO, forma, pendenza, posizione stereo, modalità. Rimane fermo durante la rotazione di un controllo e segue la frequenza quando lo rilasci.</td></tr>
   <tr><td class="k">Striscia bande</td><td>Card numerate (01–24) su quattro pagine da sei. Ogni card ha interruttore di attivazione e i campi numerici di frequenza, guadagno e Q.</td></tr>
-  <tr><td class="k">Footer</td><td>Modalità di processing, analizzatore, Freeze, intervallo in dB, selettore L/R–Mid/Side, INV ALL e le manopole BALANCE, MIX, OUTPUT.</td></tr>
+  <tr><td class="k">Footer</td><td>Modalità di processing, analizzatore, Freeze, selettore L/R–Mid/Side, INVERT L/R e le manopole BALANCE, MIX, OUTPUT.</td></tr>
 </table>
 
 <h2 id="c5">5. Le bande</h2>
 <h3>Creare, selezionare, modificare</h3>
 <ul>
   <li><strong>Doppio clic</strong> sul grafico: crea una banda nel punto indicato.</li>
-  <li><strong>Clic singolo</strong> su un nodo: seleziona la banda e apre il pannello flottante.</li>
+  <li><strong>Clic singolo</strong> su un nodo: seleziona la banda e apre il pannello flottante Liquid Glass sul lato opposto del grafico (a destra se il punto è a sinistra, a sinistra se il punto è a destra), senza coprire curva e nodo.</li>
   <li><strong>Trascinamento</strong> del nodo: imposta frequenza e guadagno.</li>
   <li><strong>Rotella</strong> sul grafico: cambia il Q della banda selezionata.</li>
   <li><strong>Doppio clic</strong> su una manopola del pannello: riporta quel parametro al valore predefinito.</li>
@@ -236,7 +236,7 @@
   <li><strong>Side Chain spectrum</strong>: mostra anche lo spettro della chiave esterna.</li>
 </ul>
 <p><strong>Freeze</strong> blocca l'aggiornamento dello spettro: audio, riduzione di guadagno e meter continuano a funzionare. <strong>Resume</strong> riavvia il disegno. Lo stato di Freeze è locale all'editor e non è un parametro salvato nello stato del plugin.</p>
-<p>Il pulsante accanto (12 dB / 30 dB / 6 dB) cambia l'intervallo verticale del grafico. I meter di uscita usano ritenzione di picco con decadimento nel tempo.</p>
+<p>Il selettore in alto a destra (3 dB / 6 dB / 12 dB / 30 dB) cambia l'intervallo verticale della scala EQ in ambra sulla destra. Accanto compare la scala dBFS (0 … −90) allineata ai meter di uscita L/R con ritenzione di picco.</p>
 
 <h2 id="c12">12. Uscita, bilanciamento e Mid/Side</h2>
 <h3>Manopole del footer</h3>
@@ -252,7 +252,7 @@
 <ul>
   <li>guadagno indipendente di <strong>MID</strong> e <strong>SIDE</strong>;</li>
   <li>interruttori di polarità <strong>INV MID</strong> e <strong>INV SIDE</strong>;</li>
-  <li><strong>INV ALL</strong>, che inverte il segnale stereo finale.</li>
+  <li><strong>INVERT L/R</strong>, che inverte la polarità di entrambi i canali di uscita L/R.</li>
 </ul>
 <p>La manopola di bilanciamento centrale favorisce il Mid verso sinistra e il Side verso destra. Questi controlli agiscono dopo il Mix, richiedono un segnale stereo, vengono salvati nei preset e sono rilasciati dal bypass. In modalità L/R il pannello è nascosto.</p>
 <div class="note">Il controllo di uscita non è un limiter: non protegge da picchi introdotti dall'equalizzazione.</div>

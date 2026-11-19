@@ -15,7 +15,9 @@ def run(*args):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--build-dir", type=pathlib.Path, default=ROOT / "build")
+    parser.add_argument("--arch", choices=["arm64", "x86_64"], default="arm64")
     args = parser.parse_args()
+    arch = args.arch
     build = args.build_dir.resolve()
     release = ROOT / "releases"
     release.mkdir(exist_ok=True)
@@ -67,7 +69,7 @@ def main():
         distribution.write_text(f'''<?xml version="1.0" encoding="utf-8"?>
 <installer-gui-script minSpecVersion="2">
 <title>Aester EQ by {BRAND} — Educational Equalizer</title>
-<options customize="never" hostArchitectures="arm64"/>
+<options customize="never" hostArchitectures="{arch}"/>
 <domains enable_anywhere="false" enable_currentUserHome="false" enable_localSystem="true"/>
 <allowed-os-versions><os-version min="11.0"/></allowed-os-versions>
 <welcome file="Welcome.html" mime-type="text/html"/>
@@ -85,14 +87,15 @@ def main():
 
         image = work / "image"
         image.mkdir()
-        pkg = image / f"Aester-EQ-{BRAND}-Installer.pkg"
+        pkg_name = f"Aester-EQ-{BRAND}-Installer.pkg" if arch == "arm64" else f"Aester-EQ-{BRAND}-{arch}-Installer.pkg"
+        pkg = image / pkg_name
         run("productbuild", "--distribution", distribution, "--resources", resources,
             "--package-path", work, pkg)
 
         shutil.copy2(source, image / source.name)
         readme = (ROOT / "README.md").read_text()
         readme = readme.replace(f"(releases/Aester-EQ-{BRAND}-{version}-macOS-arm64.dmg)",
-                                f"(Aester-EQ-{BRAND}-Installer.pkg)")
+                                f"({pkg_name})")
         readme = readme.replace(
             f"(releases/Aester-EQ-{BRAND}-{version}-Windows-x64.exe)",
             f"(https://github.com/neurorasolutions/Aester-EQ/releases/tag/aester-v{version})")
@@ -106,11 +109,11 @@ def main():
             shutil.copytree(ROOT / "MANUALS", image / "MANUALS")
         shutil.copy2(ROOT / "packaging/resources/ReadMe.html", image / "START-HERE.html")
 
-        dmg = release / f"Aester-EQ-{BRAND}-{version}-macOS-arm64.dmg"
+        dmg = release / f"Aester-EQ-{BRAND}-{version}-macOS-{arch}.dmg"
         run("hdiutil", "create", "-volname", f"Aester EQ by {BRAND}", "-srcfolder", image,
             "-format", "UDZO", "-ov", dmg)
         run("hdiutil", "verify", dmg)
-        shutil.copy2(pkg, release / f"Aester-EQ-{BRAND}-Installer.pkg")
+        shutil.copy2(pkg, release / pkg_name)
 
     sums = []
     for path in sorted(release.iterdir()):

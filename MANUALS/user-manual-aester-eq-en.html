@@ -133,7 +133,7 @@
   <tr><td class="k">L / R meters</td><td>Right of the graph, per-channel peak.</td></tr>
   <tr><td class="k">Floating panel</td><td>Appears when a band is selected: FREQ, GAIN, Q, SOLO, shape, slope, stereo placement, mode. It stays still while a knob is turned and follows frequency when released.</td></tr>
   <tr><td class="k">Band strip</td><td>Numbered cards (01–24) over four pages of six. Each card has an enable switch and numeric fields for frequency, gain and Q.</td></tr>
-  <tr><td class="k">Footer</td><td>Processing path, analyzer, Freeze, dB range, L/R–Mid/Side selector, INV ALL and the BALANCE, MIX, OUTPUT rotaries.</td></tr>
+  <tr><td class="k">Footer</td><td>Processing path, analyzer, Freeze, L/R–Mid/Side selector, INVERT L/R and the BALANCE, MIX, OUTPUT rotaries.</td></tr>
 </table>
 
 <h2 id="c5">5. Bands</h2>
@@ -231,7 +231,7 @@
   <li><strong>Side Chain spectrum</strong>: also shows the external key spectrum.</li>
 </ul>
 <p><strong>Freeze</strong> holds the spectrum display: audio, gain reduction and meters keep running. <strong>Resume</strong> restarts display updates. Freeze is editor-local and is not a stored plugin parameter.</p>
-<p>The adjacent button (12 dB / 30 dB / 6 dB) changes the vertical range. Output meters use peak retention with time-based decay.</p>
+<p>The top-right range selector (3 dB / 6 dB / 12 dB / 30 dB) changes the vertical EQ scale in amber on the right. Beside it sits the dBFS scale (0 … −90) aligned with the L/R output meters and peak-hold indicators.</p>
 
 <h2 id="c12">12. Output, balance and Mid/Side</h2>
 <h3>Footer rotaries</h3>
@@ -247,7 +247,7 @@
 <ul>
   <li>independent <strong>MID</strong> and <strong>SIDE</strong> gain;</li>
   <li><strong>INV MID</strong> and <strong>INV SIDE</strong> polarity switches;</li>
-  <li><strong>INV ALL</strong>, which inverts the final stereo signal.</li>
+  <li><strong>INVERT L/R</strong>, which inverts the polarity of both Left and Right output channels.</li>
 </ul>
 <p>The centre balance knob favours Mid to the left and Side to the right. These controls act after Mix, require a stereo signal, are stored in presets and are released by bypass. In L/R mode the panel is hidden.</p>
 <div class="note">The output control is not a limiter: it does not protect against peaks introduced by equalization.</div>
